@@ -1,4 +1,4 @@
-const SCHEMES = [
+const schemes = [
   {
     name: "Current Scheme (2023-24)",
     bands: [

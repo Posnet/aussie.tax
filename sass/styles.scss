@@ -1,7 +1,3 @@
-/* Light theme */
-:root {
-    --highlight-color: #ffcccb; /* Light red */
-}
 
 /* Base styles */
 body {
@@ -10,6 +6,11 @@ body {
     padding: 20px;
     background-color: #f9f9f9;
     color: #333;
+}
+
+:root {
+    --highlight-good: green; /* Good change */
+    --highlight-bad: red; /* Bad change */
 }
 
 a {
@@ -104,6 +105,7 @@ th {
 
 /* Light theme */
 @media (prefers-color-scheme: light) {
+    
     body {
         background-color: #f9f9f9;
         color: #333;
@@ -135,7 +137,8 @@ th {
 /* Dark theme */
 @media (prefers-color-scheme: dark) {
     :root {
-        --highlight-color: #ff6666; /* Darker red */
+        --highlight-good: #90ee90;
+        --highlight-bad: #ff6666;
     }
 
     body {
