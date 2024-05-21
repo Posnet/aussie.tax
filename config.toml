@@ -1,6 +1,6 @@
 base_url = "https://aussie.tax"
 title = "Australian Tax Calculator"
-description = "Compare new Aussie tax cut schemes."
+description = "Compare new Aussie tax cut schemes. Calculate your tax cut and see how much you will save next year. See how much better or worse off you are with the new scheme compared to the previous cancelled proposal."
 default_language = "en"
 build_search_index = false
 compile_scss = true
