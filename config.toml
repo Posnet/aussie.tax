@@ -1,0 +1,17 @@
+base_url = "https://aussie.tax"
+title = "Australian Tax Calculator"
+description = "Compare different Australian tax schemes based on your annual income."
+default_language = "en"
+build_search_index = false
+compile_scss = true
+compile_sass = true
+minify_html = true
+
+[extra]
+author = "Your Name"
+
+[markdown]
+highlight_code = true
+
+[build]
+sitemap = "sitemap.xml"

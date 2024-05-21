@@ -1,0 +1,22 @@
+{% extends "page.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ config.title }}</h1>
+    {{ section.content | safe }}
+    <div class="form-group">
+        <label for="income">Enter your annual income:</label>
+        <input type="number" id="income" placeholder="e.g., 60000" value="88920" oninput="updateTax()">
+    </div>
+    <table id="totalsTable">
+        <thead>
+            <tr>
+                <th>Scheme</th>
+                <th>Total Tax Payable</th>
+            </tr>
+        </thead>
+        <tbody id="totalsBody"></tbody>
+    </table>
+    <div id="resultsContainer" class="flex-container"></div>
+</div>
+{% endblock %}
