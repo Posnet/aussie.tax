@@ -1,6 +1,6 @@
 base_url = "https://aussie.tax"
 title = "Australian Tax Calculator"
-description = "Compare different Australian tax schemes based on your annual income."
+description = "Compare new Aussie tax cut schemes."
 default_language = "en"
 build_search_index = false
 compile_scss = true
@@ -10,7 +10,7 @@ minify_html = false
 [extra]
 author = "Posnet"
 email = "aussie-tax@denialof.services"
-image = "https://aussie.tax/tax-cut-share.png"
+image = "https://aussie.tax/tax_cut_share.png"
 
 [markdown]
 highlight_code = true
