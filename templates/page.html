@@ -4,27 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config.title }}</title>
-    <meta name="description" content="{{ config.description }}">
+    <meta name="description" content="{{ config.description | safe }}">
     <meta name="author" content="{{ config.extra.author }}">
     <meta name="contact" content="{{ config.extra.email }}">
     <meta name="theme-color" content="#02335c">
     
     <!-- Open Graph meta tags for better social media sharing -->
-    <meta property="og:title" content="{{ config.title }}">
-    <meta property="og:description" content="{{ config.description }}">
+    <meta property="og:title" content="{{ config.title | safe }}">
+    <meta property="og:description" content="{{ config.description | safe }}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ config.base_url }}">
-    <meta property="og:image" content="{{ config.extra.image }}">
+    <meta property="og:url" content="{{ config.base_url | safe }}">
+    <meta property="og:image" content="{{ config.extra.image | safe }}">
     
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ config.title }}">
     <meta name="twitter:description" content="{{ config.description }}">
-    <meta name="twitter:image" content="{{ config.extra.image }}">
-    <meta name="twitter:site" content="@yourTwitterHandle">
+    <meta name="twitter:image" content="{{ config.extra.image | safe }}">
     
     <!-- Canonical link to avoid duplicate content issues -->
-    <link rel="canonical" href="{{ config.base_url }}">
+    <link rel="canonical" href="{{ config.base_url | safe }}">
     
     <!-- Schema.org structured data for rich snippets -->
     <script type="application/ld+json">
@@ -32,13 +31,13 @@
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "{{ config.title }}",
-      "description": "{{ config.description }}",
+      "description": "{{ config.description | safe }}",
       "author": {
         "@type": "Person",
         "name": "{{ config.extra.author }}"
       },
-      "url": "{{ config.base_url }}",
-      "image": "{{ config.extra.image }}",
+      "url": "{{ config.base_url | safe }}",
+      "image": "{{ config.extra.image | safe }}",
     }
     </script>
     
@@ -51,7 +50,7 @@
     
     <!-- Additional SEO best practices -->
     <meta name="robots" content="index, follow">
-    <link rel="alternate" href="{{ config.base_url }}" hreflang="{{ config.default_language }}">
+    <link rel="alternate" href="{{ config.base_url | safe }}" hreflang="{{ config.default_language }}">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ config.base_url }}/sitemap.xml">
 </head>
 <body>
