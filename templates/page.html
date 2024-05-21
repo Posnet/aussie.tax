@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config.title }}</title>
     <meta name="description" content="{{ config.description | safe }}">
-    <meta name="author" content="{{ config.extra.author }}">
-    <meta name="contact" content="{{ config.extra.email }}">
+    <meta name="author" content="{{ config.extra.author | safe }}">
+    <meta name="contact" content="{{ config.extra.email | safe }}">
     <meta name="theme-color" content="#02335c">
     
     <!-- Open Graph meta tags for better social media sharing -->
@@ -34,7 +34,8 @@
       "description": "{{ config.description | safe }}",
       "author": {
         "@type": "Person",
-        "name": "{{ config.extra.author }}"
+        "name": "{{ config.extra.author }}",
+        "email": "{{ config.extra.email | safe }}"
       },
       "url": "{{ config.base_url | safe }}",
       "image": "{{ config.extra.image | safe }}",
@@ -51,7 +52,7 @@
     <!-- Additional SEO best practices -->
     <meta name="robots" content="index, follow">
     <link rel="alternate" href="{{ config.base_url | safe }}" hreflang="{{ config.default_language }}">
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ config.base_url }}/sitemap.xml">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ config.base_url | safe }}/sitemap.xml">
 </head>
 <body>
     {% block content %}{% endblock %}
