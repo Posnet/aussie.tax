@@ -14,8 +14,8 @@ function generateTables() {
         
         const colgroup = `
                 <colgroup>
-                    <col style="width: 75%;">
-                    <col style="width: 25%;">
+                    <col style="width: 72%;">
+                    <col style="width: 28%;">
                 </colgroup>
             `;
 
