@@ -6,7 +6,7 @@
     {{ section.content | safe }}
     <div class="form-group">
         <label for="income">Enter your annual income:</label>
-        <input type="number" id="income" placeholder="e.g., 60000" value="88920" oninput="updateTax()">
+        <input type="number" min="0" max="1000000000" step="100" id="income" placeholder="e.g., 60000" value="88920" oninput="updateTax()">
     </div>
     <table id="totalsTable">
         <thead>

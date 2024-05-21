@@ -59,6 +59,29 @@ h1 {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Styles for the input box */
+input[type="number"] {
+    width: 100%;
+    margin: 4px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+
+    &:focus {
+        border-color: #007acc;
+        box-shadow: 0 0 5px rgba(0, 122, 204, 0.5);
+        outline: none;
+    }
+
+    &::placeholder {
+        color: #aaa;
+    }
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -69,7 +92,7 @@ h1 {
 }
 
 .form-group input {
-    width: 100%;
+    max-width: 40%;
     padding: 8px;
     box-sizing: border-box;
 }
@@ -199,6 +222,10 @@ th {
 @media (max-width: 768px) {
     .container {
         padding: 10px;
+    }
+
+    .form-group input {
+        max-width: 100%;
     }
 
     .flex-container {
