@@ -11,6 +11,13 @@ function generateTables() {
         const table = document.createElement("table");
         table.id = `resultsTable${index + 1}`;
         table.classList.add("flex-item");
+        
+        const colgroup = `
+                <colgroup>
+                    <col style="width: 75%;">
+                    <col style="width: 25%;">
+                </colgroup>
+            `;
 
         const thead = `
             <thead>
@@ -26,8 +33,7 @@ function generateTables() {
 
         const tbody = document.createElement("tbody");
         tbody.id = `resultsBody${index + 1}`;
-
-        table.innerHTML = thead;
+        table.innerHTML = colgroup + thead;
         table.appendChild(tbody);
         resultsContainer.appendChild(table);
     });
@@ -60,10 +66,13 @@ function updateTax() {
                 let startSpan = document.createElement("span");
                 let endSpan = document.createElement("span");
                 let rateSpan = document.createElement("span");
+                let taxPayableSpan = document.createElement("span");
                 
                 startSpan.innerText = formatCurrency(band.start);
                 endSpan.innerText = band.end === Infinity ? "and above" : formatCurrency(band.end);
+                endSpan.innerText += " ";
                 rateSpan.innerText = cents;
+                taxPayableSpan.innerText = formatCurrency(band.taxPayable);
 
                 // Highlight differences
                 if (index > 0) {
@@ -82,7 +91,8 @@ function updateTax() {
                 bandCell.appendChild(startSpan);
                 bandCell.appendChild(document.createTextNode(" - "));
                 bandCell.appendChild(endSpan);
-                taxCell.appendChild(rateSpan);
+                bandCell.appendChild(rateSpan);
+                taxCell.appendChild(taxPayableSpan);
 
                 row.appendChild(bandCell);
                 row.appendChild(taxCell);

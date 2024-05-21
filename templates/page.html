@@ -6,11 +6,53 @@
     <title>{{ config.title }}</title>
     <meta name="description" content="{{ config.description }}">
     <meta name="author" content="{{ config.extra.author }}">
+    <meta name="contact" content="{{ config.extra.email }}">
+    <meta name="theme-color" content="#02335c">
+    
+    <!-- Open Graph meta tags for better social media sharing -->
+    <meta property="og:title" content="{{ config.title }}">
+    <meta property="og:description" content="{{ config.description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ config.base_url }}">
+    <meta property="og:image" content="{{ config.extra.image }}">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ config.title }}">
+    <meta name="twitter:description" content="{{ config.description }}">
+    <meta name="twitter:image" content="{{ config.extra.image }}">
+    <meta name="twitter:site" content="@yourTwitterHandle">
+    
+    <!-- Canonical link to avoid duplicate content issues -->
+    <link rel="canonical" href="{{ config.base_url }}">
+    
+    <!-- Schema.org structured data for rich snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "{{ config.title }}",
+      "description": "{{ config.description }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ config.extra.author }}"
+      },
+      "url": "{{ config.base_url }}",
+      "image": "{{ config.extra.image }}",
+    }
+    </script>
+    
+    <!-- Favicons and manifest -->
     <link rel="stylesheet" href="/styles.css">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Additional SEO best practices -->
+    <meta name="robots" content="index, follow">
+    <link rel="alternate" href="{{ config.base_url }}" hreflang="{{ config.default_language }}">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ config.base_url }}/sitemap.xml">
 </head>
 <body>
     {% block content %}{% endblock %}
