@@ -957,11 +957,12 @@ def main():
             border: 1px solid var(--border);
             position: relative;
             min-height: 0;
+            padding-bottom: 14px;
         }
         
         #chart {
             width: 100%;
-            height: 100%;
+            height: calc(100% - 14px);
         }
         
         
@@ -1524,14 +1525,16 @@ def main():
                     
                     return yAxisConfig;
                 })(),
-                margin: { t: 40, r: 20, b: 300, l: 85 },
-                showlegend: true,
+                margin: window.innerWidth <= 768 ? 
+                    { t: 40, r: 10, b: 180, l: 60 } : 
+                    { t: 40, r: 150, b: 120, l: 70 },
+                showlegend: window.innerWidth > 768,
                 legend: {
-                    orientation: 'h',
+                    orientation: 'v',
                     yanchor: 'top',
-                    y: -0.25,
-                    xanchor: 'center',
-                    x: 0.5,
+                    y: 0.75,
+                    xanchor: 'left',
+                    x: 1.01,
                     font: { size: 11, color: colors.textSecondary },
                     bgcolor: colors.bg,
                     bordercolor: colors.border,
@@ -1965,15 +1968,26 @@ def main():
                 }
             }
         });
+        
+        // Handle window resize for responsive legend
+        window.addEventListener('resize', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            const colorBy = document.getElementById('colorBy').value;
+            updateChart(currentFrame, colorBy, stackMode);
+        });
     </script>
 </body>
 </html>'''
     
+    # Create public directory if it doesn't exist
+    import os
+    os.makedirs('public', exist_ok=True)
+    
     # Write the self-contained HTML file
-    with open('ato_tax_plotly_chart.html', 'w') as f:
+    with open('public/index.html', 'w') as f:
         f.write(html_content)
     
-    print("✓ Created Plotly-based animated chart: ato_tax_plotly_chart.html")
+    print("✓ Created Plotly-based animated chart: public/index.html")
     print("✓ Features:")
     print("  - Responsive design that fills the screen")
     print("  - Plotly stacked/grouped bar chart")
