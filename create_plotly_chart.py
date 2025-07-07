@@ -403,22 +403,22 @@ def main():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aussie Tax</title>
-    <meta name="description" content="TODO">
+    <meta name="description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="author" content="Posnet">
     <meta name="contact" content="aussie-tax@denialof.services">
     <meta name="theme-color" content="#02335c">
 
     <!-- Open Graph meta tags for better social media sharing -->
-    <meta property="og:title" content="TODO">
-    <meta property="og:description" content="TODO">
+    <meta property="og:title" content="Aussie Tax">
+    <meta property="og:description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://aussie.tax">
     <meta property="og:image" content="https://aussie.tax/tax_cut_share.png">
 
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="TODO">
-    <meta name="twitter:description" content="TODO">
+    <meta name="twitter:title" content="Aussie Tax">
+    <meta name="twitter:description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="twitter:image" content="https://aussie.tax/tax_cut_share.png">
 
     <!-- Canonical link to avoid duplicate content issues -->
@@ -429,8 +429,8 @@ def main():
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "TODO",
-      "description": "TODO",
+      "name": "Aussie Tax",
+      "description": "Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.",
       "author": {
         "@type": "Person",
         "name": "Posnet",
@@ -453,627 +453,7 @@ def main():
     <link rel="alternate" href="https://aussie.tax" hreflang="en">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="https://aussie.tax/sitemap.xml">
 
-    <style>
-        :root {
-            --bg-primary: #f8f8f8;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f0f0f0;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --text-tertiary: #999999;
-            --accent: #8b5cf6;
-            --accent-hover: #7c3aed;
-            --border: #e0e0e0;
-            --grid: #f0f0f0;
-            --error: #cc3333;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-primary: #1a1a1a;
-                --bg-secondary: #242424;
-                --bg-tertiary: #2a2a2a;
-                --text-primary: #e0e0e0;
-                --text-secondary: #a0a0a0;
-                --text-tertiary: #707070;
-                --accent: #a78bfa;
-                --accent-hover: #c4b5fd;
-                --border: #3a3a3a;
-                --grid: #2a2a2a;
-                --error: #ff6666;
-            }
-        }
-        
-        body.light-theme {
-            --bg-primary: #f8f8f8;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f0f0f0;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --text-tertiary: #999999;
-            --accent: #8b5cf6;
-            --accent-hover: #7c3aed;
-            --border: #e0e0e0;
-            --grid: #f0f0f0;
-            --error: #cc3333;
-        }
-        
-        body.dark-theme {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #242424;
-            --bg-tertiary: #2a2a2a;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --text-tertiary: #707070;
-            --accent: #a78bfa;
-            --accent-hover: #c4b5fd;
-            --border: #3a3a3a;
-            --grid: #2a2a2a;
-            --error: #ff6666;
-        }
-        
-        body.dark-theme input[type="checkbox"]:checked + .toggle-switch {
-            box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
-        }
-        
-        body.dark-theme button:hover {
-            box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            overflow: hidden;
-            font-size: 13px;
-        }
-        
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 4px;
-            }
-        }
-        
-        .header {
-            background: var(--bg-secondary);
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            margin-bottom: 8px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            align-items: stretch;
-            position: relative;
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-        }
-        
-        h1 {
-            margin: 0 0 6px 0;
-            color: var(--text-primary);
-            font-size: 15px;
-            font-weight: normal;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 15px;
-            align-items: stretch;
-            height: 64px;
-        }
-        
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-                height: auto;
-            }
-        }
-        
-        .selectors-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            height: 100%;
-        }
-        
-        @media (max-width: 768px) {
-            .selectors-group {
-                height: auto;
-            }
-        }
-        
-        .toggles-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 0 0 auto;
-            height: 100%;
-            justify-content: space-between;
-        }
-        
-        @media (max-width: 768px) {
-            .toggles-group {
-                height: auto;
-                justify-content: flex-start;
-            }
-        }
-        
-        .play-button-group {
-            justify-content: center;
-        }
-        
-        .toggles-row {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .selectors-group .control-group select {
-            width: 160px;
-        }
-        
-        @media (max-width: 768px) {
-            .selectors-group .control-group select {
-                width: 100%;
-                min-width: 140px;
-            }
-        }
-        
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .selectors-group .control-group {
-            gap: 4px;
-        }
-        
-        .control-group > label:first-child {
-            font-size: 12px;
-            font-weight: normal;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-right: 4px;
-        }
-        
-        .stats-wrapper {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .stats {
-            background: var(--bg-tertiary);
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        
-        .stats-row {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .data-source, .current-year {
-            margin-top: auto;
-            padding-top: 6px;
-            font-size: 9px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: left;
-        }
-        
-        .data-source-bottom {
-            position: fixed;
-            bottom: 8px;
-            left: 8px;
-            font-size: 9px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: var(--bg-secondary);
-            padding: 4px 8px;
-            border: 1px solid var(--border);
-            border-radius: 2px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .help-text {
-            position: absolute;
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .current-year {
-            margin-top: 6px;
-            padding-top: 0;
-        }
-        
-        .tax-reform-note {
-            margin: 2px 0 0 0;
-            padding: 4px 8px;
-            background: var(--bg-primary);
-            border-left: 3px solid var(--accent);
-            font-size: 10px;
-            line-height: 1.3;
-            transition: all 0.3s;
-        }
-        
-        .tax-reform-note.empty {
-            border-left-color: var(--text-tertiary);
-            opacity: 0.5;
-        }
-        
-        .note-label {
-            color: var(--accent);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .tax-reform-note.empty .note-label {
-            color: var(--text-tertiary);
-        }
-        
-        .note-text {
-            color: var(--text-secondary);
-            margin-left: 4px;
-        }
-        
-        .tax-reform-note.empty .note-text {
-            color: var(--text-tertiary);
-        }
-        
-        .data-source a, .data-source-bottom a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-        
-        .data-source a:hover, .data-source-bottom a:hover {
-            color: var(--accent-hover);
-            text-decoration: underline;
-        }
-        
-        select, button {
-            padding: 4px 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            font-size: 12px;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 0;
-        }
-        
-        select:focus, button:focus {
-            outline: 1px solid var(--accent);
-            outline-offset: -1px;
-        }
-        
-        /* Custom toggle switch styles */
-        input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .control-group label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .control-group label span {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-            margin-left: 8px;
-        }
-        
-        /* Fixed width for toggle icon labels only */
-        .toggle-icon {
-            font-size: 18px !important;
-            display: inline-block;
-            width: 24px;
-            text-align: center;
-            margin-left: 6px !important;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
-        }
-        
-        /* Toggle switch track */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 32px;
-            height: 18px;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Toggle switch indicator */
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            left: 2px;
-            top: 2px;
-            background-color: var(--text-tertiary);
-            border-radius: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Checked state */
-        input[type="checkbox"]:checked + .toggle-switch {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
-        }
-        
-        input[type="checkbox"]:checked + .toggle-switch::after {
-            transform: translateX(14px);
-            background-color: var(--bg-secondary);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Hover state */
-        .control-group label:hover .toggle-switch {
-            background-color: var(--bg-tertiary);
-            border-color: var(--accent);
-        }
-        
-        input[type="checkbox"]:checked + .toggle-switch:hover {
-            background-color: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-        
-        /* Focus state */
-        input[type="checkbox"]:focus-visible + .toggle-switch {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
-        
-        button {
-            background: var(--bg-tertiary);
-            color: var(--accent);
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-        
-        button:hover {
-            background: var(--accent);
-            color: var(--bg-secondary);
-            border-color: var(--accent);
-            box-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            button {
-                color: var(--accent);
-            }
-            
-            input[type="checkbox"]:checked + .toggle-switch {
-                box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
-            }
-            
-            button:hover {
-                box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
-            }
-        }
-        
-        button.playing {
-            background: var(--accent);
-            color: var(--bg-secondary);
-            border-color: var(--accent);
-        }
-        
-        button.playing:hover {
-            background: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-        
-        .theme-toggle {
-            position: absolute;
-            top: -1px;
-            right: -1px;
-            font-size: 11px;
-            text-transform: uppercase;
-            padding: 3px 6px;
-            background: var(--accent);
-            border: 1px solid var(--accent);
-            color: var(--bg-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-            z-index: 10;
-        }
-        
-        .theme-toggle:hover {
-            background: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-        
-        .theme-toggle::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 4px;
-            padding: 4px 8px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-size: 10px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .theme-toggle:hover::after {
-            opacity: 1;
-        }
-        
-        #chart-container {
-            flex: 1;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            position: relative;
-            min-height: 0;
-            padding-bottom: 14px;
-        }
-        
-        #chart {
-            width: 100%;
-            height: calc(100% - 14px);
-        }
-        
-        
-        .stat {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            line-height: 1.2;
-        }
-        
-        .stat-value {
-            font-size: 13px;
-            font-weight: normal;
-            color: var(--text-primary);
-            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
-            line-height: 1.2;
-        }
-        
-        .stat-change {
-            font-size: 11px;
-            color: var(--text-tertiary);
-            display: block;
-            line-height: 1.2;
-        }
-        
-        
-        .stat-change.positive {
-            color: #10b981;
-        }
-        
-        .stat-change.negative {
-            color: #ef4444;
-        }
-        
-        .tax-brackets {
-            background: var(--bg-tertiary);
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .tax-brackets-header {
-            font-size: 10px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        
-        .tax-brackets-viz {
-            position: relative;
-            flex: 1;
-            margin-top: 4px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .tax-bracket-bar {
-            display: flex;
-            height: 24px;
-            border: 1px solid var(--border);
-            background: var(--bg-primary);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .tax-bracket {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--bg-secondary);
-            font-size: 10px;
-            font-weight: bold;
-            transition: all 0.3s;
-            border-right: 1px solid var(--border);
-        }
-        
-        .tax-bracket:last-child {
-            border-right: none;
-        }
-        
-        .tax-bracket-labels {
-            display: flex;
-            position: relative;
-            height: 15px;
-            font-size: 9px;
-            color: var(--text-tertiary);
-        }
-        
-        .tax-bracket-label {
-            position: absolute;
-            top: 4px;
-            transform: translateX(-50%);
-            white-space: nowrap;
-        }
-        
-        .tax-bracket-label:last-child {
-            transform: translateX(-100%);
-        }
-    </style>
+    <link rel="stylesheet" href="/styles.css">
     <script src="plotly-latest.min.js"></script>
 </head>
 <body>
@@ -1140,7 +520,9 @@ def main():
                         </div>
                         
                         <div class="control-group play-button-group">
+                            <button id="prevYear" class="nav-button mobile-only">◀◀</button>
                             <button id="playButton">▶ Play Animation</button>
+                            <button id="nextYear" class="nav-button mobile-only">▶▶</button>
                         </div>
                     </div>
                 </div>
@@ -1195,8 +577,11 @@ def main():
             </a>
         </div>
     </div>
+    <script src="script.js"></script>
+</body>
+</html>'''
 
-    <script>
+    script_content = '''
         // Embedded data
         const rawData = ''' + data_json + ''';
         
@@ -1247,7 +632,27 @@ def main():
             '$500,001 to $1,000,000',
             '$1,000,001 or more'
         ];
-        const incomeRangesDisplay = incomeRanges;
+        
+        // Mobile-friendly abbreviated labels
+        const incomeRangesMobile = [
+            '≤$6K',
+            '$6-10K',
+            '$10-20K',
+            '$20-30K',
+            '$30-40K',
+            '$40-50K',
+            '$50-60K',
+            '$60-80K',
+            '$80-100K',
+            '$100-150K',
+            '$150-200K',
+            '$200-250K',
+            '$250-500K',
+            '$500K-1M',
+            '>$1M'
+        ];
+        
+        const incomeRangesDisplay = window.innerWidth <= 768 ? incomeRangesMobile : incomeRanges;
         
         let currentFrame = 0;
         let isPlaying = false;
@@ -1416,7 +821,7 @@ def main():
                 return {
                     name: category,
                     type: 'bar',
-                    x: incomeRanges,
+                    x: window.innerWidth <= 768 ? incomeRangesMobile : incomeRanges,
                     y: yValues,
                     hovertemplate: getHoverTemplate(totalBy, valueMode, category),
                     marker: { color: color }
@@ -1548,7 +953,7 @@ def main():
                     family: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
                     color: colors.textSecondary
                 },
-                annotations: [{
+                annotations: window.innerWidth > 768 ? [{
                     text: year,
                     xref: 'paper',
                     yref: 'paper',
@@ -1562,7 +967,7 @@ def main():
                         color: colors.text,
                         family: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace'
                     }
-                }]
+                }] : []
             };
             
             // Update tax reform note
@@ -1734,6 +1139,7 @@ def main():
                 animationInterval = setInterval(() => {
                     currentFrame = (currentFrame + 1) % years.length;
                     updateChart(currentFrame, currentColorBy, currentStackMode);
+                    updateNavButtons();
                     
                     if (currentFrame === years.length - 1) {
                         clearInterval(animationInterval);
@@ -1943,6 +1349,7 @@ def main():
                 currentFrame = eventdata.slider.active;
                 const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
                 updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+                updateNavButtons();
             }
         });
         
@@ -1959,12 +1366,14 @@ def main():
                 if (currentFrame > 0) {
                     currentFrame--;
                     updateChart(currentFrame, colorBy, stackMode);
+                    updateNavButtons();
                 }
             } else if (event.key === 'ArrowRight' || event.key === 'Right') {
                 event.preventDefault();
                 if (currentFrame < years.length - 1) {
                     currentFrame++;
                     updateChart(currentFrame, colorBy, stackMode);
+                    updateNavButtons();
                 }
             }
         });
@@ -1975,17 +1384,51 @@ def main():
             const colorBy = document.getElementById('colorBy').value;
             updateChart(currentFrame, colorBy, stackMode);
         });
-    </script>
-</body>
-</html>'''
+        
+        // Mobile navigation buttons
+        document.getElementById('prevYear').addEventListener('click', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            const colorBy = document.getElementById('colorBy').value;
+            
+            if (currentFrame > 0) {
+                currentFrame--;
+                updateChart(currentFrame, colorBy, stackMode);
+                updateNavButtons();
+            }
+        });
+        
+        document.getElementById('nextYear').addEventListener('click', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            const colorBy = document.getElementById('colorBy').value;
+            
+            if (currentFrame < years.length - 1) {
+                currentFrame++;
+                updateChart(currentFrame, colorBy, stackMode);
+                updateNavButtons();
+            }
+        });
+        
+        // Update navigation button states
+        function updateNavButtons() {
+            document.getElementById('prevYear').disabled = currentFrame === 0;
+            document.getElementById('nextYear').disabled = currentFrame === years.length - 1;
+        }
+        
+        // Initialize nav button states
+        updateNavButtons();
+    '''
     
     # Create public directory if it doesn't exist
     import os
     os.makedirs('public', exist_ok=True)
     
-    # Write the self-contained HTML file
+    # Write the HTML file
     with open('public/index.html', 'w') as f:
         f.write(html_content)
+    
+    # Write the JavaScript file
+    with open('public/script.js', 'w') as f:
+        f.write(script_content)
     
     print("✓ Created Plotly-based animated chart: public/index.html")
     print("✓ Features:")
