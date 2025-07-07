@@ -514,7 +514,8 @@ def main():
         .controls {
             display: flex;
             gap: 15px;
-            align-items: flex-start;
+            align-items: stretch;
+            height: 64px;
         }
         
         .selectors-group {
@@ -522,6 +523,7 @@ def main():
             flex-direction: column;
             gap: 6px;
             flex: 1;
+            height: 100%;
         }
         
         .toggles-group {
@@ -529,6 +531,12 @@ def main():
             flex-direction: column;
             gap: 6px;
             flex: 0 0 auto;
+            height: 100%;
+            justify-content: space-between;
+        }
+        
+        .play-button-group {
+            justify-content: center;
         }
         
         .toggles-row {
@@ -537,13 +545,17 @@ def main():
         }
         
         .selectors-group .control-group select {
-            width: 140px;
+            width: 160px;
         }
         
         .control-group {
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        
+        .selectors-group .control-group {
+            gap: 4px;
         }
         
         .control-group > label:first-child {
@@ -697,6 +709,17 @@ def main():
             letter-spacing: 0.5px;
             color: var(--text-secondary);
             margin-left: 8px;
+        }
+        
+        /* Fixed width for toggle icon labels only */
+        .toggle-icon {
+            font-size: 18px !important;
+            display: inline-block;
+            width: 24px;
+            text-align: center;
+            margin-left: 6px !important;
+            text-transform: none !important;
+            letter-spacing: 0 !important;
         }
         
         /* Toggle switch track */
@@ -982,9 +1005,9 @@ def main():
                         <div class="control-group">
                             <label for="totalBy">Total by:</label>
                             <select id="totalBy">
-                                <option value="individuals_count" selected>Individuals</option>
+                                <option value="individuals_count">Individuals</option>
                                 <option value="total_income_amount">Total Income</option>
-                                <option value="net_tax_amount">Total Tax</option>
+                                <option value="net_tax_amount" selected>Tax Payed</option>
                             </select>
                         </div>
                     </div>
@@ -995,15 +1018,23 @@ def main():
                                 <label for="stackToggle">
                                     <input type="checkbox" id="stackToggle" checked>
                                     <div class="toggle-switch"></div>
-                                    <span>STACK</span>
+                                    <span id="stackIcon" class="toggle-icon">≡</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="percentageToggle">
-                                    <input type="checkbox" id="percentageToggle">
+                                    <input type="checkbox" id="percentageToggle" checked>
                                     <div class="toggle-switch"></div>
-                                    <span>%</span>
+                                    <span class="toggle-icon">％</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="cumulativeToggle">
+                                    <input type="checkbox" id="cumulativeToggle" checked>
+                                    <div class="toggle-switch"></div>
+                                    <span class="toggle-icon">∑</span>
                                 </label>
                             </div>
                             
@@ -1011,20 +1042,12 @@ def main():
                                 <label for="logToggle">
                                     <input type="checkbox" id="logToggle">
                                     <div class="toggle-switch"></div>
-                                    <span>LOG</span>
-                                </label>
-                            </div>
-                            
-                            <div class="control-group">
-                                <label for="cumulativeToggle">
-                                    <input type="checkbox" id="cumulativeToggle">
-                                    <div class="toggle-switch"></div>
-                                    <span>CUMSUM</span>
+                                    <span class="toggle-icon">L<sub>10</sub></span>
                                 </label>
                             </div>
                         </div>
                         
-                        <div class="control-group">
+                        <div class="control-group play-button-group">
                             <button id="playButton">▶ Play Animation</button>
                         </div>
                     </div>
@@ -1174,7 +1197,7 @@ def main():
                 switch(totalBy) {
                     case 'individuals_count': title = 'Individuals'; break;
                     case 'total_income_amount': title = 'Total Income (AUD)'; break;
-                    case 'net_tax_amount': title = 'Total Tax (AUD)'; break;
+                    case 'net_tax_amount': title = 'Tax Payed (AUD)'; break;
                     default: title = 'Value';
                 }
             }
@@ -1578,6 +1601,8 @@ def main():
         
         document.getElementById('stackToggle').addEventListener('change', function() {
             const stackMode = this.checked ? 'stack' : 'group';
+            const stackIcon = document.getElementById('stackIcon');
+            stackIcon.textContent = this.checked ? '≡' : '⦀';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
         });
         
@@ -1814,7 +1839,7 @@ def main():
             };
         })(Plotly.addTraces);
         
-        // Initialize chart
+        // Initialize chart with percentage and cumulative enabled by default
         updateChart(0, 'age_range_display', 'stack');
         
         // Handle slider events
