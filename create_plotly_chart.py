@@ -402,8 +402,57 @@ def main():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Australian Tax Distribution - Interactive Animation</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Aussie Tax</title>
+    <meta name="description" content="TODO">
+    <meta name="author" content="Posnet">
+    <meta name="contact" content="aussie-tax@denialof.services">
+    <meta name="theme-color" content="#02335c">
+
+    <!-- Open Graph meta tags for better social media sharing -->
+    <meta property="og:title" content="TODO">
+    <meta property="og:description" content="TODO">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aussie.tax">
+    <meta property="og:image" content="https://aussie.tax/tax_cut_share.png">
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TODO">
+    <meta name="twitter:description" content="TODO">
+    <meta name="twitter:image" content="https://aussie.tax/tax_cut_share.png">
+
+    <!-- Canonical link to avoid duplicate content issues -->
+    <link rel="canonical" href="https://aussie.tax">
+
+    <!-- Schema.org structured data for rich snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "TODO",
+      "description": "TODO",
+      "author": {
+        "@type": "Person",
+        "name": "Posnet",
+        "email": "aussie-tax@denialof.services"
+      },
+      "url": "https://aussie.tax",
+      "image": "https://aussie.tax/tax_cut_share.png",
+    }
+    </script>
+
+    <!-- Favicons and manifest -->
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <!-- Additional SEO best practices -->
+    <meta name="robots" content="index, follow">
+    <link rel="alternate" href="https://aussie.tax" hreflang="en">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://aussie.tax/sitemap.xml">
+
     <style>
         :root {
             --bg-primary: #f8f8f8;
@@ -1024,6 +1073,7 @@ def main():
             transform: translateX(-100%);
         }
     </style>
+    <script src="plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="container">
