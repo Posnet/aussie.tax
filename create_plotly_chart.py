@@ -83,6 +83,305 @@ def main():
     # Convert to JSON for embedding
     data_json = all_data.to_json(orient='records')
     
+    # Calculate global maximums for each colorBy option
+    # For stacked mode - always sum across all demographics per income range
+    stacked_max_individuals = all_data.groupby(['year', 'normalized_income_range'])['individuals_count'].sum().max()
+    stacked_max_income = all_data.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max()
+    stacked_max_tax = all_data.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
+    
+    # For grouped mode - need to calculate for each colorBy option
+    grouped_max = {}
+    
+    # When colorBy is 'none' - sum all demographics per income bracket
+    grouped_max['none'] = {
+        'individuals_count': all_data.groupby(['year', 'normalized_income_range'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
+    }
+    
+    # When colorBy is 'age_range_display' - max within each age group per income bracket
+    grouped_max['age_range_display'] = {
+        'individuals_count': all_data.groupby(['year', 'normalized_income_range', 'age_range_display'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data.groupby(['year', 'normalized_income_range', 'age_range_display'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data.groupby(['year', 'normalized_income_range', 'age_range_display'])['net_tax_amount'].sum().max()
+    }
+    
+    # When colorBy is 'sex' - max within each sex per income bracket
+    grouped_max['sex'] = {
+        'individuals_count': all_data.groupby(['year', 'normalized_income_range', 'sex'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data.groupby(['year', 'normalized_income_range', 'sex'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data.groupby(['year', 'normalized_income_range', 'sex'])['net_tax_amount'].sum().max()
+    }
+    
+    # When colorBy is 'taxable_status' - max within each status per income bracket
+    grouped_max['taxable_status'] = {
+        'individuals_count': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['net_tax_amount'].sum().max()
+    }
+    
+    print(f"Debug maximums:")
+    print(f"  Stacked - individuals: {stacked_max_individuals:,.0f}, income: ${stacked_max_income:,.0f}, tax: ${stacked_max_tax:,.0f}")
+    for color_by in grouped_max:
+        max_indiv = grouped_max[color_by]['individuals_count']
+        max_income = grouped_max[color_by]['total_income_amount'] 
+        max_tax = grouped_max[color_by]['net_tax_amount']
+        print(f"  Grouped ({color_by}) - individuals: {max_indiv:,.0f}, income: ${max_income:,.0f}, tax: ${max_tax:,.0f}")
+    
+    # Pre-calculate tick values for all combinations
+    def calculate_ticks(max_val, is_money=False, is_log=False):
+        """Calculate tick values and labels for a given max value."""
+        if is_log:
+            # For log scale, use powers of 10
+            if is_money:
+                ticks = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12]
+                labels = ['$1K', '$10K', '$100K', '$1M', '$10M', '$100M', '$1B', '$10B', '$100B', '$1T']
+            else:
+                ticks = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000]
+                labels = ['1', '10', '100', '1K', '10K', '100K', '1M', '10M']
+            # Filter to only include ticks up to max_val * 2
+            valid_ticks = [(t, l) for t, l in zip(ticks, labels) if t <= max_val * 2]
+            return [t[0] for t in valid_ticks], [t[1] for t in valid_ticks]
+        else:
+            # Linear scale
+            if is_money:
+                if max_val <= 10e9:
+                    step = 2e9
+                elif max_val <= 30e9:
+                    step = 5e9
+                elif max_val <= 100e9:
+                    step = 10e9
+                elif max_val <= 300e9:
+                    step = 20e9
+                else:
+                    step = 50e9
+                
+                ticks = []
+                labels = []
+                for i in range(0, int(max_val * 1.2), int(step)):
+                    ticks.append(i)
+                    if i == 0:
+                        labels.append('$0')
+                    elif i < 1e9:
+                        labels.append(f'${i/1e6:.0f}M')
+                    else:
+                        labels.append(f'${i/1e9:.0f}B')
+            else:
+                # For individuals
+                if max_val <= 100e3:  # 100K
+                    step = 20e3  # 20K steps
+                elif max_val <= 500e3:  # 500K
+                    step = 100e3  # 100K steps
+                elif max_val <= 2e6:  # 2M
+                    step = 500e3  # 500K steps
+                elif max_val <= 5e6:
+                    step = 1e6
+                elif max_val <= 20e6:
+                    step = 2e6
+                elif max_val <= 50e6:
+                    step = 5e6
+                else:
+                    step = 10e6
+                
+                ticks = []
+                labels = []
+                for i in range(0, int(max_val * 1.2), int(step)):
+                    ticks.append(i)
+                    if i == 0:
+                        labels.append('0')
+                    elif i < 1e6:
+                        labels.append(f'{i/1e3:.0f}K')
+                    else:
+                        labels.append(f'{i/1e6:.0f}M')
+            
+            return ticks, labels
+    
+    # Calculate percentage ticks
+    def calculate_percentage_ticks(max_pct, is_log=False):
+        """Calculate percentage tick values and labels."""
+        if is_log:
+            ticks = [0.01, 0.1, 1, 10, 100]
+            labels = ['0.01%', '0.1%', '1%', '10%', '100%']
+            valid_ticks = [(t, l) for t, l in zip(ticks, labels) if t <= max_pct * 2]
+            return [t[0] for t in valid_ticks], [t[1] for t in valid_ticks]
+        else:
+            # Better step logic for small percentages
+            if max_pct <= 1:
+                step = 0.2
+            elif max_pct <= 3:
+                step = 0.5
+            elif max_pct <= 5:
+                step = 1
+            elif max_pct <= 10:
+                step = 2
+            elif max_pct <= 25:
+                step = 5
+            elif max_pct <= 50:
+                step = 10
+            else:
+                step = 20
+            
+            ticks = []
+            labels = []
+            i = 0
+            while i <= max_pct * 1.2:
+                ticks.append(i)
+                labels.append(f'{i:g}%')  # Use :g to avoid unnecessary decimals
+                i += step
+            
+            return ticks, labels
+    
+    # Calculate percentage max values properly
+    # For percentage mode, values are % of total year
+    # Stacked: sum of percentages in each income bracket
+    # Grouped: individual percentage values (same as stacked, just not summed visually)
+    
+    # Calculate actual percentage maximums from data
+    stacked_pct_max = {}
+    grouped_pct_max = {
+        'none': {},
+        'age_range_display': {},
+        'sex': {},
+        'taxable_status': {}
+    }
+    
+    for col in ['individuals_count', 'total_income_amount', 'net_tax_amount']:
+        max_stacked = 0
+        
+        # Initialize max for each colorBy option
+        for color_by in grouped_pct_max:
+            grouped_pct_max[color_by][col] = 0
+        
+        for year in years:
+            year_data = all_data[all_data['year'] == year]
+            year_total = year_data[col].sum()
+            
+            if year_total > 0:
+                # For each income bracket, calculate sum of percentages
+                for income_range in income_range_order:
+                    bracket_data = year_data[year_data['normalized_income_range'] == income_range]
+                    bracket_sum = bracket_data[col].sum()
+                    bracket_pct = (bracket_sum / year_total) * 100
+                    max_stacked = max(max_stacked, bracket_pct)
+                    
+                    # For 'none' - the whole bracket is one bar
+                    grouped_pct_max['none'][col] = max(grouped_pct_max['none'][col], bracket_pct)
+                    
+                    # For other colorBy options - need to group by that demographic
+                    for color_by in ['age_range_display', 'sex', 'taxable_status']:
+                        color_groups = bracket_data.groupby(color_by)[col].sum()
+                        for group_val in color_groups:
+                            group_pct = (group_val / year_total) * 100
+                            grouped_pct_max[color_by][col] = max(grouped_pct_max[color_by][col], group_pct)
+        
+        stacked_pct_max[col] = max_stacked
+        print(f"  {col} - stacked max %: {max_stacked:.2f}%")
+        print(f"    grouped max % by colorBy option:")
+        for color_by in grouped_pct_max:
+            print(f"      {color_by}: {grouped_pct_max[color_by][col]:.2f}%")
+    
+    # Pre-calculate Y-axis ranges for all combinations
+    y_ranges = {}
+    
+    # Helper to calculate range with padding
+    def calculate_range(max_val, is_log=False, is_pct=False):
+        if is_log:
+            if is_pct:
+                return [0.01, float(max_val * 2)]  # 0.01% to 2x max for log percentage
+            elif max_val < 1000:
+                return [1, float(max_val * 10)]
+            else:
+                return [1000, float(max_val * 10)]  # $1K minimum for money, 1 for counts
+        else:
+            return [0, float(max_val * 1.1)]  # 10% padding for linear
+    
+    # For now, just use the "none" grouped max as a default
+    grouped_max_individuals = grouped_max['none']['individuals_count']
+    grouped_max_income = grouped_max['none']['total_income_amount']
+    grouped_max_tax = grouped_max['none']['net_tax_amount']
+    
+    # Absolute values
+    y_ranges['stack_individuals_abs'] = calculate_range(stacked_max_individuals)
+    y_ranges['stack_individuals_log'] = calculate_range(stacked_max_individuals, is_log=True)
+    y_ranges['stack_income_abs'] = calculate_range(stacked_max_income)
+    y_ranges['stack_income_log'] = calculate_range(stacked_max_income, is_log=True)
+    y_ranges['stack_tax_abs'] = calculate_range(stacked_max_tax)
+    y_ranges['stack_tax_log'] = calculate_range(stacked_max_tax, is_log=True)
+    
+    y_ranges['group_individuals_abs'] = calculate_range(grouped_max_individuals)
+    y_ranges['group_individuals_log'] = calculate_range(grouped_max_individuals, is_log=True)
+    y_ranges['group_income_abs'] = calculate_range(grouped_max_income)
+    y_ranges['group_income_log'] = calculate_range(grouped_max_income, is_log=True)
+    y_ranges['group_tax_abs'] = calculate_range(grouped_max_tax)
+    y_ranges['group_tax_log'] = calculate_range(grouped_max_tax, is_log=True)
+    
+    # Percentage values
+    y_ranges['stack_individuals_pct'] = calculate_range(stacked_pct_max['individuals_count'], is_pct=True)
+    y_ranges['stack_individuals_pct_log'] = calculate_range(stacked_pct_max['individuals_count'], is_log=True, is_pct=True)
+    y_ranges['stack_income_pct'] = calculate_range(stacked_pct_max['total_income_amount'], is_pct=True)
+    y_ranges['stack_income_pct_log'] = calculate_range(stacked_pct_max['total_income_amount'], is_log=True, is_pct=True)
+    y_ranges['stack_tax_pct'] = calculate_range(stacked_pct_max['net_tax_amount'], is_pct=True)
+    y_ranges['stack_tax_pct_log'] = calculate_range(stacked_pct_max['net_tax_amount'], is_log=True, is_pct=True)
+    
+    # Use 'none' as default for the old y_ranges (these aren't used in the new implementation)
+    y_ranges['group_individuals_pct'] = calculate_range(grouped_pct_max['none']['individuals_count'], is_pct=True)
+    y_ranges['group_individuals_pct_log'] = calculate_range(grouped_pct_max['none']['individuals_count'], is_log=True, is_pct=True)
+    y_ranges['group_income_pct'] = calculate_range(grouped_pct_max['none']['total_income_amount'], is_pct=True)
+    y_ranges['group_income_pct_log'] = calculate_range(grouped_pct_max['none']['total_income_amount'], is_log=True, is_pct=True)
+    y_ranges['group_tax_pct'] = calculate_range(grouped_pct_max['none']['net_tax_amount'], is_pct=True)
+    y_ranges['group_tax_pct_log'] = calculate_range(grouped_pct_max['none']['net_tax_amount'], is_log=True, is_pct=True)
+    
+    # Pre-calculate all tick combinations
+    tick_configs = {}
+    
+    # Absolute values - stacked
+    tick_configs['stack_individuals_abs'] = calculate_ticks(stacked_max_individuals, is_money=False, is_log=False)
+    tick_configs['stack_individuals_log'] = calculate_ticks(stacked_max_individuals, is_money=False, is_log=True)
+    tick_configs['stack_income_abs'] = calculate_ticks(stacked_max_income, is_money=True, is_log=False)
+    tick_configs['stack_income_log'] = calculate_ticks(stacked_max_income, is_money=True, is_log=True)
+    tick_configs['stack_tax_abs'] = calculate_ticks(stacked_max_tax, is_money=True, is_log=False)
+    tick_configs['stack_tax_log'] = calculate_ticks(stacked_max_tax, is_money=True, is_log=True)
+    
+    # Absolute values - grouped
+    tick_configs['group_individuals_abs'] = calculate_ticks(grouped_max_individuals, is_money=False, is_log=False)
+    tick_configs['group_individuals_log'] = calculate_ticks(grouped_max_individuals, is_money=False, is_log=True)
+    tick_configs['group_income_abs'] = calculate_ticks(grouped_max_income, is_money=True, is_log=False)
+    tick_configs['group_income_log'] = calculate_ticks(grouped_max_income, is_money=True, is_log=True)
+    tick_configs['group_tax_abs'] = calculate_ticks(grouped_max_tax, is_money=True, is_log=False)
+    tick_configs['group_tax_log'] = calculate_ticks(grouped_max_tax, is_money=True, is_log=True)
+    
+    # Percentage values - using calculated maximums
+    tick_configs['stack_individuals_pct'] = calculate_percentage_ticks(stacked_pct_max['individuals_count'], is_log=False)
+    tick_configs['stack_individuals_pct_log'] = calculate_percentage_ticks(stacked_pct_max['individuals_count'], is_log=True)
+    tick_configs['stack_income_pct'] = calculate_percentage_ticks(stacked_pct_max['total_income_amount'], is_log=False)
+    tick_configs['stack_income_pct_log'] = calculate_percentage_ticks(stacked_pct_max['total_income_amount'], is_log=True)
+    tick_configs['stack_tax_pct'] = calculate_percentage_ticks(stacked_pct_max['net_tax_amount'], is_log=False)
+    tick_configs['stack_tax_pct_log'] = calculate_percentage_ticks(stacked_pct_max['net_tax_amount'], is_log=True)
+    
+    tick_configs['group_individuals_pct'] = calculate_percentage_ticks(grouped_pct_max['none']['individuals_count'], is_log=False)
+    tick_configs['group_individuals_pct_log'] = calculate_percentage_ticks(grouped_pct_max['none']['individuals_count'], is_log=True)
+    tick_configs['group_income_pct'] = calculate_percentage_ticks(grouped_pct_max['none']['total_income_amount'], is_log=False)
+    tick_configs['group_income_pct_log'] = calculate_percentage_ticks(grouped_pct_max['none']['total_income_amount'], is_log=True)
+    tick_configs['group_tax_pct'] = calculate_percentage_ticks(grouped_pct_max['none']['net_tax_amount'], is_log=False)
+    tick_configs['group_tax_pct_log'] = calculate_percentage_ticks(grouped_pct_max['none']['net_tax_amount'], is_log=True)
+    
+    # Convert to JSON for embedding
+    tick_configs_json = json.dumps(tick_configs)
+    y_ranges_json = json.dumps(y_ranges)
+    
+    # Debug output
+    print("\nDebug - Y-axis ranges:")
+    for key in sorted(y_ranges.keys()):
+        print(f"  {key}: {y_ranges[key]}")
+    
+    print("\nDebug - Tick configs (first few ticks):")
+    for key in sorted(tick_configs.keys()):
+        vals, labels = tick_configs[key]
+        if len(vals) > 0:
+            print(f"  {key}: vals={vals[:3]}..., labels={labels[:3]}...")
+        else:
+            print(f"  {key}: EMPTY")
+    
     # Create the HTML template with Plotly
     html_content = '''<!DOCTYPE html>
 <html lang="en">
@@ -178,33 +477,53 @@ def main():
         
         .header {
             background: var(--bg-secondary);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid var(--border);
             margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 15px;
-        }
-        
-        .header-left {
-            flex: 1;
+            align-items: stretch;
+            position: relative;
         }
         
         h1 {
             margin: 0 0 6px 0;
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 15px;
             font-weight: normal;
             text-transform: uppercase;
             letter-spacing: 1px;
+            text-align: center;
         }
         
         .controls {
             display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .selectors-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        
+        .toggles-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+        
+        .toggles-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .selectors-group .control-group select {
+            width: 140px;
         }
         
         .control-group {
@@ -222,20 +541,107 @@ def main():
             margin-right: 4px;
         }
         
-        .data-source {
-            margin-top: 6px;
-            font-size: 11px;
+        .stats-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stats {
+            background: var(--bg-tertiary);
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .data-source, .current-year {
+            margin-top: auto;
+            padding-top: 6px;
+            font-size: 9px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        
+        .data-source-bottom {
+            position: fixed;
+            bottom: 8px;
+            left: 8px;
+            font-size: 9px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--bg-secondary);
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .help-text {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
             color: var(--text-tertiary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .data-source a {
+        .current-year {
+            margin-top: 6px;
+            padding-top: 0;
+        }
+        
+        .tax-reform-note {
+            margin: 2px 0 0 0;
+            padding: 4px 8px;
+            background: var(--bg-primary);
+            border-left: 3px solid var(--accent);
+            font-size: 10px;
+            line-height: 1.3;
+            transition: all 0.3s;
+        }
+        
+        .tax-reform-note.empty {
+            border-left-color: var(--text-tertiary);
+            opacity: 0.5;
+        }
+        
+        .note-label {
+            color: var(--accent);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .tax-reform-note.empty .note-label {
+            color: var(--text-tertiary);
+        }
+        
+        .note-text {
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+        
+        .tax-reform-note.empty .note-text {
+            color: var(--text-tertiary);
+        }
+        
+        .data-source a, .data-source-bottom a {
             color: var(--accent);
             text-decoration: none;
         }
         
-        .data-source a:hover {
+        .data-source a:hover, .data-source-bottom a:hover {
             color: var(--accent-hover);
             text-decoration: underline;
         }
@@ -378,8 +784,8 @@ def main():
         
         .theme-toggle {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: -1px;
+            right: -1px;
             font-size: 11px;
             text-transform: uppercase;
             padding: 3px 6px;
@@ -388,6 +794,7 @@ def main():
             color: var(--bg-secondary);
             cursor: pointer;
             transition: all 0.2s;
+            z-index: 10;
         }
         
         .theme-toggle:hover {
@@ -430,18 +837,11 @@ def main():
             height: 100%;
         }
         
-        .stats {
-            background: var(--bg-tertiary);
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            display: flex;
-            gap: 15px;
-        }
         
         .stat {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            justify-content: center;
         }
         
         .stat-label {
@@ -449,6 +849,7 @@ def main():
             color: var(--text-tertiary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            line-height: 1.2;
         }
         
         .stat-value {
@@ -456,13 +857,16 @@ def main():
             font-weight: normal;
             color: var(--text-primary);
             font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+            line-height: 1.2;
         }
         
         .stat-change {
             font-size: 11px;
             color: var(--text-tertiary);
-            margin-left: 4px;
+            display: block;
+            line-height: 1.2;
         }
+        
         
         .stat-change.positive {
             color: #10b981;
@@ -471,100 +875,213 @@ def main():
         .stat-change.negative {
             color: #ef4444;
         }
+        
+        .tax-brackets {
+            background: var(--bg-tertiary);
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tax-brackets-header {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .tax-brackets-viz {
+            position: relative;
+            flex: 1;
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .tax-bracket-bar {
+            display: flex;
+            height: 24px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tax-bracket {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-secondary);
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border-right: 1px solid var(--border);
+        }
+        
+        .tax-bracket:last-child {
+            border-right: none;
+        }
+        
+        .tax-bracket-labels {
+            display: flex;
+            position: relative;
+            height: 15px;
+            font-size: 9px;
+            color: var(--text-tertiary);
+        }
+        
+        .tax-bracket-label {
+            position: absolute;
+            top: 4px;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+        
+        .tax-bracket-label:last-child {
+            transform: translateX(-100%);
+        }
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" data-tooltip="System theme">◐</button>
     <div class="container">
         <div class="header">
-            <div class="header-left">
-                <h1>AUS TAX DISTRIBUTION // INDIVIDUAL TAXPAYERS 2010-2023</h1>
+            <button class="theme-toggle" id="themeToggle" data-tooltip="System theme">◐</button>
+            <div class="controls-section">
+                <h1>AUSSIE TAX // INDIVIDUAL TAXPAYERS 2010-2023</h1>
                 <div class="controls">
-                    <div class="control-group">
-                        <label for="colorBy">Color by:</label>
-                        <select id="colorBy">
-                            <option value="none">None</option>
-                            <option value="age_range_display" selected>Age Group</option>
-                            <option value="sex">Gender</option>
-                            <option value="taxable_status">Taxable Status</option>
-                        </select>
+                    <div class="selectors-group">
+                        <div class="control-group">
+                            <label for="colorBy">Color by:</label>
+                            <select id="colorBy">
+                                <option value="none">None</option>
+                                <option value="age_range_display" selected>Age Group</option>
+                                <option value="sex">Gender</option>
+                                <option value="taxable_status">Taxable Status</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="totalBy">Total by:</label>
+                            <select id="totalBy">
+                                <option value="individuals_count" selected>Individuals</option>
+                                <option value="total_income_amount">Total Income</option>
+                                <option value="net_tax_amount">Total Tax</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="control-group">
-                        <label for="stackToggle">
-                            <input type="checkbox" id="stackToggle" checked>
-                            <div class="toggle-switch"></div>
-                            <span>STACK</span>
-                        </label>
+                    <div class="toggles-group">
+                        <div class="toggles-row">
+                            <div class="control-group">
+                                <label for="stackToggle">
+                                    <input type="checkbox" id="stackToggle" checked>
+                                    <div class="toggle-switch"></div>
+                                    <span>STACK</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="percentageToggle">
+                                    <input type="checkbox" id="percentageToggle">
+                                    <div class="toggle-switch"></div>
+                                    <span>%</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="logToggle">
+                                    <input type="checkbox" id="logToggle">
+                                    <div class="toggle-switch"></div>
+                                    <span>LOG</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <button id="playButton">▶ Play Animation</button>
+                        </div>
                     </div>
-                    
-                    <div class="control-group">
-                        <label for="percentageToggle">
-                            <input type="checkbox" id="percentageToggle">
-                            <div class="toggle-switch"></div>
-                            <span>%</span>
-                        </label>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="logToggle">
-                            <input type="checkbox" id="logToggle">
-                            <div class="toggle-switch"></div>
-                            <span>LOG</span>
-                        </label>
-                    </div>
-                    
-                    <div class="control-group">
-                        <button id="playButton">▶ Play Animation</button>
-                    </div>
-                </div>
-                <div class="data-source">
-                    Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2022-23/resource/a7f8226a-af03-431a-80f3-cdca85a9d63e" target="_blank" rel="noopener noreferrer">
-                        Australian Taxation Office - Taxation Statistics 2022-23
-                    </a>
                 </div>
             </div>
             
-            <div class="stats" id="stats">
-                <div class="stat">
-                    <span class="stat-label">Total Taxpayers:</span>
-                    <span class="stat-value">
-                        <span id="totalIndividuals">-</span>
-                        <span class="stat-change" id="totalIndividualsChange"></span>
-                    </span>
+            
+            <div class="stats-wrapper">
+                <div class="stats" id="stats">
+                    <div class="stats-row">
+                        <div class="stat">
+                            <span class="stat-label">Total Taxpayers:</span>
+                            <span class="stat-value" id="totalIndividuals">-</span>
+                            <span class="stat-change" id="totalIndividualsChange">(-%)</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Income:</span>
+                            <span class="stat-value" id="totalIncome">-</span>
+                            <span class="stat-change" id="totalIncomeChange">(-%)</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Tax:</span>
+                            <span class="stat-value" id="totalTax">-</span>
+                            <span class="stat-change" id="totalTaxChange">(-%)</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Effective Rate:</span>
+                            <span class="stat-value" id="effectiveRate">-</span>
+                            <span class="stat-change" id="effectiveRateChange">(-pp)</span>
+                        </div>
+                    </div>
+                    <div class="tax-reform-note" id="taxReformNote">
+                        <span class="note-label">FYI:</span>
+                        <span class="note-text" id="taxReformText">-</span>
+                    </div>
                 </div>
-                <div class="stat">
-                    <span class="stat-label">Total Income:</span>
-                    <span class="stat-value">
-                        <span id="totalIncome">-</span>
-                        <span class="stat-change" id="totalIncomeChange"></span>
-                    </span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Total Tax:</span>
-                    <span class="stat-value">
-                        <span id="totalTax">-</span>
-                        <span class="stat-change" id="totalTaxChange"></span>
-                    </span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Effective Rate:</span>
-                    <span class="stat-value">
-                        <span id="effectiveRate">-</span>
-                        <span class="stat-change" id="effectiveRateChange"></span>
-                    </span>
-                </div>
+            </div>
+            
+            <div class="tax-brackets" id="taxBrackets">
+                <div class="tax-brackets-header">TAX BRACKETS</div>
+                <div class="tax-brackets-viz" id="taxBracketsViz"></div>
             </div>
         </div>
         
         <div id="chart-container">
             <div id="chart"></div>
+            <div class="help-text">← → arrow keys to navigate years</div>
+        </div>
+        
+        <div class="data-source-bottom">
+            Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2022-23/resource/a7f8226a-af03-431a-80f3-cdca85a9d63e" target="_blank" rel="noopener noreferrer">
+                Australian Taxation Office - Taxation Statistics 2022-23
+            </a>
         </div>
     </div>
 
     <script>
         // Embedded data
         const rawData = ''' + data_json + ''';
+        
+        // Pre-calculated maximums for each combination
+        const maximums = {
+            stacked: {
+                individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
+                total_income_amount: ''' + str(int(stacked_max_income)) + ''',
+                net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
+            },
+            grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + '''
+        };
+        
+        // Pre-calculated percentage maximums
+        const percentageMaximums = {
+            stacked: {
+                individuals_count: ''' + str(stacked_pct_max['individuals_count']) + ''',
+                total_income_amount: ''' + str(stacked_pct_max['total_income_amount']) + ''',
+                net_tax_amount: ''' + str(stacked_pct_max['net_tax_amount']) + '''
+            },
+            grouped: ''' + json.dumps(grouped_pct_max) + '''
+        };
         
         // Parse and prepare data
         const data = rawData;
@@ -602,8 +1119,9 @@ def main():
             if (theme !== 'auto') {
                 document.body.classList.add(theme + '-theme');
             }
-            updateChart(currentFrame, document.getElementById('colorBy').value, 
-                       document.getElementById('stackMode').value);
+            // Update chart with current settings to apply new theme colors
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
         }
         
         // Theme toggle button
@@ -620,6 +1138,40 @@ def main():
             updateTheme(nextTheme);
         });
         
+        // Helper functions for Y-axis formatting
+        function getYAxisTitle(totalBy, valueMode) {
+            if (valueMode === 'percentage') return 'Percentage';
+            switch(totalBy) {
+                case 'individuals_count': return 'Individuals';
+                case 'total_income_amount': return 'Total Income (AUD)';
+                case 'net_tax_amount': return 'Total Tax (AUD)';
+                default: return 'Value';
+            }
+        }
+        
+        function getTickFormat(totalBy, valueMode) {
+            if (valueMode === 'percentage') return '.1f';
+            if (totalBy === 'individuals_count') return ',.0f';
+            return '$.3s'; // Better currency format (e.g., $1.23B)
+        }
+        
+        function getHoverTemplate(totalBy, valueMode, category) {
+            if (valueMode === 'percentage') {
+                return '<b>%{x}</b><br>' + category + ': %{y:.2f}%<extra></extra>';
+            }
+            switch(totalBy) {
+                case 'individuals_count':
+                    return '<b>%{x}</b><br>' + category + ': %{y:,.0f}<extra></extra>';
+                case 'total_income_amount':
+                    return '<b>%{x}</b><br>' + category + ': $%{y:,.0f}<extra></extra>';
+                case 'net_tax_amount':
+                    return '<b>%{x}</b><br>' + category + ': $%{y:,.0f}<extra></extra>';
+                default:
+                    return '<b>%{x}</b><br>' + category + ': %{y:,.0f}<extra></extra>';
+            }
+        }
+        
+        
         function updateChart(yearIndex, colorBy, stackMode) {
             const year = years[yearIndex];
             const yearData = data.filter(d => d.year === year);
@@ -627,9 +1179,10 @@ def main():
             const logScale = document.getElementById('logToggle').checked;
             const isStacked = document.getElementById('stackToggle').checked;
             stackMode = isStacked ? 'stack' : 'group';
+            const totalBy = document.getElementById('totalBy').value;
             
-            // Calculate total individuals for percentage mode
-            const totalIndividuals = yearData.reduce((sum, d) => sum + d.individuals_count, 0);
+            // Calculate total for percentage mode
+            const totalValue = yearData.reduce((sum, d) => sum + d[totalBy], 0);
             
             // Group data by income range and color category
             const grouped = {};
@@ -642,7 +1195,7 @@ def main():
                 if (!grouped[key][colorKey]) {
                     grouped[key][colorKey] = 0;
                 }
-                grouped[key][colorKey] += d.individuals_count;
+                grouped[key][colorKey] += d[totalBy];
             });
             
             // Get unique color categories
@@ -672,10 +1225,11 @@ def main():
                     if (colorBy === 'none') {
                         // Sum all values for this income range
                         const value = Object.values(grouped[range] || {}).reduce((sum, val) => sum + val, 0);
-                        return valueMode === 'percentage' ? (value / totalIndividuals) * 100 : value;
+                        return valueMode === 'percentage' ? (value / totalValue) * 100 : value;
                     } else {
                         const value = grouped[range] && grouped[range][category] ? grouped[range][category] : 0;
-                        return valueMode === 'percentage' ? (value / totalIndividuals) * 100 : value;
+                        // Percentage is always calculated the same way - as % of total year
+                        return valueMode === 'percentage' ? (value / totalValue) * 100 : value;
                     }
                 });
                 
@@ -707,9 +1261,7 @@ def main():
                     type: 'bar',
                     x: incomeRanges,
                     y: yValues,
-                    hovertemplate: valueMode === 'percentage' 
-                        ? '<b>%{x}</b><br>' + category + ': %{y:.2f}%<extra></extra>'
-                        : '<b>%{x}</b><br>' + category + ': %{y:,.0f}<extra></extra>',
+                    hovertemplate: getHoverTemplate(totalBy, valueMode, category),
                     marker: { color: color }
                 };
             });
@@ -742,19 +1294,64 @@ def main():
                     gridcolor: colors.grid,
                     zerolinecolor: colors.border
                 },
-                yaxis: {
-                    title: {
-                        text: (valueMode === 'percentage' ? 'Percentage' : 'Individuals') + (logScale ? ' (log)' : ''),
-                        font: { size: 11, color: colors.textSecondary }
-                    },
-                    type: logScale ? 'log' : 'linear',
-                    tickformat: valueMode === 'percentage' ? '.1f' : ',.0f',
-                    ticksuffix: valueMode === 'percentage' ? '%' : '',
-                    tickfont: { size: 11, color: colors.textSecondary },
-                    gridcolor: colors.grid,
-                    zerolinecolor: colors.border
-                },
-                margin: { t: 25, r: 90, b: 160, l: 85 },
+                yaxis: (() => {
+                    // Get the correct maximum for current settings
+                    let maxVal;
+                    if (stackMode === 'stack') {
+                        maxVal = maximums.stacked[totalBy];
+                    } else {
+                        maxVal = maximums.grouped[colorBy][totalBy];
+                    }
+                    
+                    // For linear scale only, set a fixed range based on the maximum
+                    // For log scale, let Plotly auto-scale
+                    let yAxisConfig = {
+                        title: {
+                            text: getYAxisTitle(totalBy, valueMode) + (logScale ? ' (log)' : ''),
+                            font: { size: 11, color: colors.textSecondary }
+                        },
+                        type: logScale ? 'log' : 'linear',
+                        tickfont: { size: 11, color: colors.textSecondary },
+                        gridcolor: colors.grid,
+                        zerolinecolor: colors.border
+                    };
+                    
+                    // Add prefix/suffix for money and percentage
+                    if (valueMode === 'percentage') {
+                        yAxisConfig.ticksuffix = '%';
+                    } else if (totalBy !== 'individuals_count') {
+                        yAxisConfig.tickprefix = '$';
+                    }
+                    
+                    // Set range for both linear and log scale to keep consistent
+                    if (logScale) {
+                        // For log scale, set min/max range but let Plotly handle tickers
+                        if (valueMode === 'percentage') {
+                            // Use pre-calculated percentage maximums
+                            const pctMax = stackMode === 'stack' ? 
+                                percentageMaximums.stacked[totalBy] : 
+                                percentageMaximums.grouped[colorBy][totalBy];
+                            yAxisConfig.range = [Math.log10(0.01), Math.log10(pctMax * 1.2)]; // log range with padding
+                        } else {
+                            const minVal = Math.max(1, maxVal * 0.001); // Avoid log(0)
+                            yAxisConfig.range = [Math.log10(minVal), Math.log10(maxVal * 1.1)];
+                        }
+                    } else {
+                        // Linear scale
+                        if (valueMode === 'percentage') {
+                            // Use pre-calculated percentage maximums
+                            const pctMax = stackMode === 'stack' ? 
+                                percentageMaximums.stacked[totalBy] : 
+                                percentageMaximums.grouped[colorBy][totalBy];
+                            yAxisConfig.range = [0, pctMax * 1.2]; // 20% padding
+                        } else {
+                            yAxisConfig.range = [0, maxVal * 1.1];
+                        }
+                    }
+                    
+                    return yAxisConfig;
+                })(),
+                margin: { t: 40, r: 90, b: 220, l: 85 },
                 showlegend: true,
                 legend: {
                     orientation: 'v',
@@ -791,6 +1388,24 @@ def main():
                 }]
             };
             
+            // Update tax reform note
+            const taxReformNote = document.getElementById('taxReformNote');
+            const taxReformText = document.getElementById('taxReformText');
+            
+            if (year === '2012–13') {
+                taxReformNote.classList.remove('empty');
+                taxReformText.textContent = 'Tax-free threshold increased from $6,000 to $18,200';
+            } else if (year === '2016–17') {
+                taxReformNote.classList.remove('empty');
+                taxReformText.textContent = '32.5% bracket extended to $87,000 (was $80,000)';
+            } else if (year === '2020–21') {
+                taxReformNote.classList.remove('empty');
+                taxReformText.textContent = 'Tax cuts: 32.5% bracket extended to $120k, 37% to $180k';
+            } else {
+                taxReformNote.classList.add('empty');
+                taxReformText.textContent = '-';
+            }
+            
             // Always add slider with current position
             layout.sliders = [{
                 active: yearIndex,
@@ -822,8 +1437,9 @@ def main():
                 displayModeBar: false
             });
             
-            // Update stats
+            // Update stats and tax brackets
             updateStats(yearData, yearIndex);
+            updateTaxBrackets(year);
         }
         
         let previousYearStats = null;
@@ -865,11 +1481,15 @@ def main():
                 updatePercentageDisplay('totalTaxChange', taxChange);
                 updatePercentageDisplay('effectiveRateChange', rateChange, true);
             } else {
-                // Clear percentage displays for first year
-                document.getElementById('totalIndividualsChange').textContent = '';
-                document.getElementById('totalIncomeChange').textContent = '';
-                document.getElementById('totalTaxChange').textContent = '';
-                document.getElementById('effectiveRateChange').textContent = '';
+                // Show greyed out placeholders for first year
+                document.getElementById('totalIndividualsChange').textContent = '(-%)'
+                document.getElementById('totalIndividualsChange').className = 'stat-change';
+                document.getElementById('totalIncomeChange').textContent = '(-%)'
+                document.getElementById('totalIncomeChange').className = 'stat-change';
+                document.getElementById('totalTaxChange').textContent = '(-%)'
+                document.getElementById('totalTaxChange').className = 'stat-change';
+                document.getElementById('effectiveRateChange').textContent = '(-pp)'
+                document.getElementById('effectiveRateChange').className = 'stat-change';
             }
         }
         
@@ -890,6 +1510,11 @@ def main():
         document.getElementById('colorBy').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, this.value, stackMode);
+        });
+        
+        document.getElementById('totalBy').addEventListener('change', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
         });
         
         document.getElementById('stackToggle').addEventListener('change', function() {
@@ -936,6 +1561,169 @@ def main():
             }
         });
         
+        // Tax bracket data for each year
+        const taxBrackets = {
+            '2010–11': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 6000, rate: 15, color: '#c4b5fd' },
+                { threshold: 37000, rate: 30, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2011–12': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 6000, rate: 15, color: '#c4b5fd' },
+                { threshold: 37000, rate: 30, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2012–13': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2013–14': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2014–15': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
+            ],
+            '2015–16': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
+            ],
+            '2016–17': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 87000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
+            ],
+            '2017–18': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 87000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2018–19': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 90000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2019–20': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 37000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 90000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2020–21': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 45000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 120000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2021–22': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 45000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 120000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2022–23': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 45000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 120000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ]
+        };
+        
+        // Function to update tax brackets visualization
+        function updateTaxBrackets(year) {
+            const brackets = taxBrackets[year];
+            if (!brackets) return;
+            
+            const viz = document.getElementById('taxBracketsViz');
+            viz.innerHTML = '';
+            
+            // Create bar container
+            const barContainer = document.createElement('div');
+            barContainer.className = 'tax-bracket-bar';
+            
+            // Create labels container
+            const labelsContainer = document.createElement('div');
+            labelsContainer.className = 'tax-bracket-labels';
+            
+            const maxIncome = 200000; // Cap visualization at $200k
+            
+            brackets.forEach((bracket, i) => {
+                const nextBracket = brackets[i + 1];
+                const start = bracket.threshold;
+                const end = nextBracket ? Math.min(nextBracket.threshold, maxIncome) : maxIncome;
+                const width = ((end - start) / maxIncome) * 100;
+                
+                if (width > 0) {
+                    // Create bracket segment
+                    const div = document.createElement('div');
+                    div.className = 'tax-bracket';
+                    div.style.width = width + '%';
+                    div.style.backgroundColor = bracket.color;
+                    div.textContent = bracket.rate + '%';
+                    barContainer.appendChild(div);
+                    
+                    // Create threshold label - only for major thresholds to avoid overlap
+                    if (i === 0 || bracket.threshold === 18200 || bracket.threshold === 37000 || 
+                        bracket.threshold === 45000 || bracket.threshold === 80000 || 
+                        bracket.threshold === 87000 || bracket.threshold === 90000 || 
+                        bracket.threshold === 120000 || bracket.threshold === 180000) {
+                        const label = document.createElement('div');
+                        label.className = 'tax-bracket-label';
+                        const position = (start / maxIncome) * 100;
+                        // Adjust position for labels near the end to prevent overlap
+                        if (position > 85) {
+                            label.style.right = (100 - position) + '%';
+                            label.style.transform = 'none';
+                        } else {
+                            label.style.left = position + '%';
+                        }
+                        label.textContent = bracket.threshold === 0 ? '$0' : '$' + (bracket.threshold / 1000) + 'k';
+                        labelsContainer.appendChild(label);
+                    }
+                }
+            });
+            
+            // Add final threshold if needed
+            const lastBracket = brackets[brackets.length - 1];
+            if (lastBracket && lastBracket.threshold < maxIncome) {
+                const label = document.createElement('div');
+                label.className = 'tax-bracket-label';
+                label.style.left = '100%';
+                label.textContent = '$200k+';
+                labelsContainer.appendChild(label);
+            }
+            
+            viz.appendChild(barContainer);
+            viz.appendChild(labelsContainer);
+        }
+        
         // Define color schemes
         const colorSchemes = {
             age_range_display: [
@@ -971,6 +1759,29 @@ def main():
                 currentFrame = eventdata.slider.active;
                 const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
                 updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            }
+        });
+        
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            // Only ignore text inputs, not selects or checkboxes
+            if (event.target.tagName === 'INPUT' && event.target.type !== 'checkbox') return;
+            
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            const colorBy = document.getElementById('colorBy').value;
+            
+            if (event.key === 'ArrowLeft' || event.key === 'Left') {
+                event.preventDefault();
+                if (currentFrame > 0) {
+                    currentFrame--;
+                    updateChart(currentFrame, colorBy, stackMode);
+                }
+            } else if (event.key === 'ArrowRight' || event.key === 'Right') {
+                event.preventDefault();
+                if (currentFrame < years.length - 1) {
+                    currentFrame++;
+                    updateChart(currentFrame, colorBy, stackMode);
+                }
             }
         });
     </script>
