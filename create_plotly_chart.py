@@ -437,12 +437,11 @@ def main():
         "email": "aussie-tax@denialof.services"
       },
       "url": "https://aussie.tax",
-      "image": "https://aussie.tax/tax_cut_share.png",
+      "image": "https://aussie.tax/tax_cut_share.png"
     }
     </script>
 
     <!-- Favicons and manifest -->
-    <link rel="stylesheet" href="/styles.css">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -453,6 +452,7 @@ def main():
     <link rel="alternate" href="https://aussie.tax" hreflang="en">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="https://aussie.tax/sitemap.xml">
 
+    <!-- Stylesheets and scripts -->
     <link rel="stylesheet" href="/styles.css">
     <script src="plotly-latest.min.js"></script>
 </head>
@@ -479,7 +479,7 @@ def main():
                             <select id="totalBy">
                                 <option value="individuals_count">Individuals</option>
                                 <option value="total_income_amount">Total Income</option>
-                                <option value="net_tax_amount" selected>Tax Payed</option>
+                                <option value="net_tax_amount" selected>Tax Paid</option>
                             </select>
                         </div>
                     </div>
@@ -527,7 +527,6 @@ def main():
                     </div>
                 </div>
             </div>
-            
             
             <div class="stats-wrapper">
                 <div class="stats" id="stats">
@@ -581,98 +580,97 @@ def main():
 </body>
 </html>'''
 
-    script_content = '''
-        // Embedded data
-        const rawData = ''' + data_json + ''';
-        
-        // Pre-calculated maximums for each combination
-        const maximums = {
-            stacked: {
-                individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
-                total_income_amount: ''' + str(int(stacked_max_income)) + ''',
-                net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
-            },
-            grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + ''',
-            cumulative: {
-                individuals_count: ''' + str(int(cumulative_max['individuals_count'])) + ''',
-                total_income_amount: ''' + str(int(cumulative_max['total_income_amount'])) + ''',
-                net_tax_amount: ''' + str(int(cumulative_max['net_tax_amount'])) + '''
-            }
-        };
-        
-        // Pre-calculated percentage maximums
-        const percentageMaximums = {
-            stacked: {
-                individuals_count: ''' + str(stacked_pct_max['individuals_count']) + ''',
-                total_income_amount: ''' + str(stacked_pct_max['total_income_amount']) + ''',
-                net_tax_amount: ''' + str(stacked_pct_max['net_tax_amount']) + '''
-            },
-            grouped: ''' + json.dumps(grouped_pct_max) + '''
-        };
-        
-        // Parse and prepare data
-        const data = rawData;
-        const years = [...new Set(data.map(d => d.year))].sort();
-        
-        // Use the proper order for income ranges
-        const incomeRanges = [
-            '$6,000 or less',
-            '$6,001 to $10,000',
-            '$10,001 to $20,000',
-            '$20,001 to $30,000',
-            '$30,001 to $40,000',
-            '$40,001 to $50,000',
-            '$50,001 to $60,000',
-            '$60,001 to $80,000',
-            '$80,001 to $100,000',
-            '$100,001 to $150,000',
-            '$150,001 to $200,000',
-            '$200,001 to $250,000',
-            '$250,001 to $500,000',
-            '$500,001 to $1,000,000',
-            '$1,000,001 or more'
-        ];
-        
-        // Mobile-friendly abbreviated labels
-        const incomeRangesMobile = [
-            '≤$6K',
-            '$6-10K',
-            '$10-20K',
-            '$20-30K',
-            '$30-40K',
-            '$40-50K',
-            '$50-60K',
-            '$60-80K',
-            '$80-100K',
-            '$100-150K',
-            '$150-200K',
-            '$200-250K',
-            '$250-500K',
-            '$500K-1M',
-            '>$1M'
-        ];
-        
-        const incomeRangesDisplay = window.innerWidth <= 768 ? incomeRangesMobile : incomeRanges;
-        
-        let currentFrame = 0;
-        let isPlaying = false;
-        let animationInterval = null;
-        let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        
-        // Theme management
-        function updateTheme(theme) {
-            currentTheme = theme;
-            document.body.classList.remove('light-theme', 'dark-theme');
-            if (theme !== 'auto') {
-                document.body.classList.add(theme + '-theme');
-            }
-            // Update chart with current settings to apply new theme colors
-            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
-            updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
-        }
-        
-        // Theme toggle button
-        document.getElementById('themeToggle').addEventListener('click', function() {
+    script_content = '''// Embedded data
+const rawData = ''' + data_json + ''';
+
+// Pre-calculated maximums for each combination
+const maximums = {
+    stacked: {
+        individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
+        total_income_amount: ''' + str(int(stacked_max_income)) + ''',
+        net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
+    },
+    grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + ''',
+    cumulative: {
+        individuals_count: ''' + str(int(cumulative_max['individuals_count'])) + ''',
+        total_income_amount: ''' + str(int(cumulative_max['total_income_amount'])) + ''',
+        net_tax_amount: ''' + str(int(cumulative_max['net_tax_amount'])) + '''
+    }
+};
+
+// Pre-calculated percentage maximums
+const percentageMaximums = {
+    stacked: {
+        individuals_count: ''' + str(stacked_pct_max['individuals_count']) + ''',
+        total_income_amount: ''' + str(stacked_pct_max['total_income_amount']) + ''',
+        net_tax_amount: ''' + str(stacked_pct_max['net_tax_amount']) + '''
+    },
+    grouped: ''' + json.dumps(grouped_pct_max) + '''
+};
+
+// Parse and prepare data
+const data = rawData;
+const years = [...new Set(data.map(d => d.year))].sort();
+
+// Use the proper order for income ranges
+const incomeRanges = [
+    '$6,000 or less',
+    '$6,001 to $10,000',
+    '$10,001 to $20,000',
+    '$20,001 to $30,000',
+    '$30,001 to $40,000',
+    '$40,001 to $50,000',
+    '$50,001 to $60,000',
+    '$60,001 to $80,000',
+    '$80,001 to $100,000',
+    '$100,001 to $150,000',
+    '$150,001 to $200,000',
+    '$200,001 to $250,000',
+    '$250,001 to $500,000',
+    '$500,001 to $1,000,000',
+    '$1,000,001 or more'
+];
+
+// Mobile-friendly abbreviated labels
+const incomeRangesMobile = [
+    '≤$6K',
+    '$6-10K',
+    '$10-20K',
+    '$20-30K',
+    '$30-40K',
+    '$40-50K',
+    '$50-60K',
+    '$60-80K',
+    '$80-100K',
+    '$100-150K',
+    '$150-200K',
+    '$200-250K',
+    '$250-500K',
+    '$500K-1M',
+    '>$1M'
+];
+
+const incomeRangesDisplay = window.innerWidth <= 768 ? incomeRangesMobile : incomeRanges;
+
+let currentFrame = 0;
+let isPlaying = false;
+let animationInterval = null;
+let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+// Theme management
+function updateTheme(theme) {
+    currentTheme = theme;
+    document.body.classList.remove('light-theme', 'dark-theme');
+    if (theme !== 'auto') {
+        document.body.classList.add(theme + '-theme');
+    }
+    // Update chart with current settings to apply new theme colors
+    const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+    updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+}
+
+// Theme toggle button
+document.getElementById('themeToggle').addEventListener('click', function() {
             const themes = ['auto', 'light', 'dark'];
             const themeNames = ['System theme', 'Light theme', 'Dark theme'];
             const currentIndex = document.body.classList.contains('light-theme') ? 1 : 
@@ -694,7 +692,7 @@ def main():
                 switch(totalBy) {
                     case 'individuals_count': title = 'Individuals'; break;
                     case 'total_income_amount': title = 'Total Income (AUD)'; break;
-                    case 'net_tax_amount': title = 'Tax Payed (AUD)'; break;
+                    case 'net_tax_amount': title = 'Tax Paid (AUD)'; break;
                     default: title = 'Value';
                 }
             }
@@ -1408,15 +1406,14 @@ def main():
             }
         });
         
-        // Update navigation button states
-        function updateNavButtons() {
-            document.getElementById('prevYear').disabled = currentFrame === 0;
-            document.getElementById('nextYear').disabled = currentFrame === years.length - 1;
-        }
-        
-        // Initialize nav button states
-        updateNavButtons();
-    '''
+// Update navigation button states
+function updateNavButtons() {
+    document.getElementById('prevYear').disabled = currentFrame === 0;
+    document.getElementById('nextYear').disabled = currentFrame === years.length - 1;
+}
+
+// Initialize nav button states
+updateNavButtons();'''
     
     # Create public directory if it doesn't exist
     import os
