@@ -26,7 +26,7 @@ def simplify_age_range(val):
 
 def main():
     # Load the normalized data
-    df = pd.read_csv('ato_tax_data_normalized_for_chart.csv')
+    df = pd.read_csv('ato_2010-2023.csv')
     
     # Get unique values for controls
     years = sorted(df['income_year'].unique())
