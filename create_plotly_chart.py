@@ -89,6 +89,20 @@ def main():
     stacked_max_income = all_data.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max()
     stacked_max_tax = all_data.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
     
+    # Calculate cumulative maximums - these will be much larger
+    cumulative_max = {}
+    for col in ['individuals_count', 'total_income_amount', 'net_tax_amount']:
+        # For each year, calculate cumulative sum across income brackets
+        max_cumul = 0
+        for year in years:
+            year_data = all_data[all_data['year'] == year]
+            # Sum all values for the year (this is what cumulative will approach)
+            year_total = year_data[col].sum()
+            max_cumul = max(max_cumul, year_total)
+        cumulative_max[col] = max_cumul
+    
+    print(f"  Cumulative maximums - individuals: {cumulative_max['individuals_count']:,.0f}, income: ${cumulative_max['total_income_amount']:,.0f}, tax: ${cumulative_max['net_tax_amount']:,.0f}")
+    
     # For grouped mode - need to calculate for each colorBy option
     grouped_max = {}
     
@@ -1000,6 +1014,14 @@ def main():
                                     <span>LOG</span>
                                 </label>
                             </div>
+                            
+                            <div class="control-group">
+                                <label for="cumulativeToggle">
+                                    <input type="checkbox" id="cumulativeToggle">
+                                    <div class="toggle-switch"></div>
+                                    <span>CUMSUM</span>
+                                </label>
+                            </div>
                         </div>
                         
                         <div class="control-group">
@@ -1070,7 +1092,12 @@ def main():
                 total_income_amount: ''' + str(int(stacked_max_income)) + ''',
                 net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
             },
-            grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + '''
+            grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + ''',
+            cumulative: {
+                individuals_count: ''' + str(int(cumulative_max['individuals_count'])) + ''',
+                total_income_amount: ''' + str(int(cumulative_max['total_income_amount'])) + ''',
+                net_tax_amount: ''' + str(int(cumulative_max['net_tax_amount'])) + '''
+            }
         };
         
         // Pre-calculated percentage maximums
@@ -1139,14 +1166,19 @@ def main():
         });
         
         // Helper functions for Y-axis formatting
-        function getYAxisTitle(totalBy, valueMode) {
-            if (valueMode === 'percentage') return 'Percentage';
-            switch(totalBy) {
-                case 'individuals_count': return 'Individuals';
-                case 'total_income_amount': return 'Total Income (AUD)';
-                case 'net_tax_amount': return 'Total Tax (AUD)';
-                default: return 'Value';
+        function getYAxisTitle(totalBy, valueMode, isCumulative) {
+            let title = '';
+            if (valueMode === 'percentage') {
+                title = 'Percentage';
+            } else {
+                switch(totalBy) {
+                    case 'individuals_count': title = 'Individuals'; break;
+                    case 'total_income_amount': title = 'Total Income (AUD)'; break;
+                    case 'net_tax_amount': title = 'Total Tax (AUD)'; break;
+                    default: title = 'Value';
+                }
             }
+            return isCumulative ? 'Cumulative ' + title : title;
         }
         
         function getTickFormat(totalBy, valueMode) {
@@ -1177,6 +1209,7 @@ def main():
             const yearData = data.filter(d => d.year === year);
             const valueMode = document.getElementById('percentageToggle').checked ? 'percentage' : 'absolute';
             const logScale = document.getElementById('logToggle').checked;
+            const isCumulative = document.getElementById('cumulativeToggle').checked;
             const isStacked = document.getElementById('stackToggle').checked;
             stackMode = isStacked ? 'stack' : 'group';
             const totalBy = document.getElementById('totalBy').value;
@@ -1232,6 +1265,15 @@ def main():
                         return valueMode === 'percentage' ? (value / totalValue) * 100 : value;
                     }
                 });
+                
+                // Apply cumulative calculation if enabled
+                if (isCumulative) {
+                    let cumulativeSum = 0;
+                    for (let i = 0; i < yValues.length; i++) {
+                        cumulativeSum += yValues[i];
+                        yValues[i] = cumulativeSum;
+                    }
+                }
                 
                 // Get color based on category
                 let color;
@@ -1297,7 +1339,10 @@ def main():
                 yaxis: (() => {
                     // Get the correct maximum for current settings
                     let maxVal;
-                    if (stackMode === 'stack') {
+                    if (isCumulative) {
+                        // For cumulative, use the pre-calculated cumulative maximums
+                        maxVal = maximums.cumulative[totalBy];
+                    } else if (stackMode === 'stack') {
                         maxVal = maximums.stacked[totalBy];
                     } else {
                         maxVal = maximums.grouped[colorBy][totalBy];
@@ -1307,7 +1352,7 @@ def main():
                     // For log scale, let Plotly auto-scale
                     let yAxisConfig = {
                         title: {
-                            text: getYAxisTitle(totalBy, valueMode) + (logScale ? ' (log)' : ''),
+                            text: getYAxisTitle(totalBy, valueMode, isCumulative) + (logScale ? ' (log)' : ''),
                             font: { size: 11, color: colors.textSecondary }
                         },
                         type: logScale ? 'log' : 'linear',
@@ -1328,10 +1373,17 @@ def main():
                         // For log scale, set min/max range but let Plotly handle tickers
                         if (valueMode === 'percentage') {
                             // Use pre-calculated percentage maximums
-                            const pctMax = stackMode === 'stack' ? 
-                                percentageMaximums.stacked[totalBy] : 
-                                percentageMaximums.grouped[colorBy][totalBy];
-                            yAxisConfig.range = [Math.log10(0.01), Math.log10(pctMax * 1.2)]; // log range with padding
+                            let pctMax;
+                            if (isCumulative) {
+                                // For cumulative percentages, max should be exactly 100%
+                                pctMax = 100;
+                                yAxisConfig.range = [Math.log10(0.01), Math.log10(100)]; // Cap at 100%
+                            } else {
+                                pctMax = stackMode === 'stack' ? 
+                                    percentageMaximums.stacked[totalBy] : 
+                                    percentageMaximums.grouped[colorBy][totalBy];
+                                yAxisConfig.range = [Math.log10(0.01), Math.log10(pctMax * 1.2)]; // log range with padding
+                            }
                         } else {
                             const minVal = Math.max(1, maxVal * 0.001); // Avoid log(0)
                             yAxisConfig.range = [Math.log10(minVal), Math.log10(maxVal * 1.1)];
@@ -1340,10 +1392,17 @@ def main():
                         // Linear scale
                         if (valueMode === 'percentage') {
                             // Use pre-calculated percentage maximums
-                            const pctMax = stackMode === 'stack' ? 
-                                percentageMaximums.stacked[totalBy] : 
-                                percentageMaximums.grouped[colorBy][totalBy];
-                            yAxisConfig.range = [0, pctMax * 1.2]; // 20% padding
+                            let pctMax;
+                            if (isCumulative) {
+                                // For cumulative percentages, max should be exactly 100%
+                                pctMax = 100;
+                                yAxisConfig.range = [0, 100]; // Cap at 100%
+                            } else {
+                                pctMax = stackMode === 'stack' ? 
+                                    percentageMaximums.stacked[totalBy] : 
+                                    percentageMaximums.grouped[colorBy][totalBy];
+                                yAxisConfig.range = [0, pctMax * 1.2]; // 20% padding
+                            }
                         } else {
                             yAxisConfig.range = [0, maxVal * 1.1];
                         }
@@ -1528,6 +1587,11 @@ def main():
         });
         
         document.getElementById('logToggle').addEventListener('change', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+        });
+        
+        document.getElementById('cumulativeToggle').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
         });
