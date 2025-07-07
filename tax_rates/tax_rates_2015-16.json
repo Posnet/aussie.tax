@@ -1,0 +1,40 @@
+{
+  "year": "2015-16",
+  "brackets": [
+    {
+      "min": 0,
+      "max": 18200,
+      "tax": 0,
+      "rate": 0
+    },
+    {
+      "min": 18201,
+      "max": 37000,
+      "tax": 0,
+      "rate": 0.19
+    },
+    {
+      "min": 37001,
+      "max": 80000,
+      "tax": 3572,
+      "rate": 0.325
+    },
+    {
+      "min": 80001,
+      "max": 180000,
+      "tax": 17547,
+      "rate": 0.37
+    },
+    {
+      "min": 180001,
+      "max": null,
+      "tax": 54547,
+      "rate": 0.45
+    }
+  ],
+  "medicare_levy": 0.02,
+  "temporary_budget_repair_levy": {
+    "threshold": 180000,
+    "rate": 0.02
+  }
+}

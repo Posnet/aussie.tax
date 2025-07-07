@@ -401,12 +401,18 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             if (year === '2012–13') {
                 taxReformNote.classList.remove('empty');
                 taxReformText.textContent = 'Tax-free threshold increased from $6,000 to $18,200';
+            } else if (year === '2014–15' || year === '2015–16') {
+                taxReformNote.classList.remove('empty');
+                taxReformText.textContent = 'Budget Repair Levy: 45% + 2% = 47% effective rate >$180k';
             } else if (year === '2016–17') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = '32.5% bracket extended to $87,000 (was $80,000)';
+                taxReformText.textContent = '32.5% bracket to $87k; Budget Repair Levy: 47% on >$180k';
             } else if (year === '2020–21') {
                 taxReformNote.classList.remove('empty');
                 taxReformText.textContent = 'Tax cuts: 32.5% bracket extended to $120k, 37% to $180k';
+            } else if (year === '2024–25' || year === '2025–26') {
+                taxReformNote.classList.remove('empty');
+                taxReformText.textContent = 'Stage 3 tax cuts: Lower rates and higher thresholds';
             } else {
                 taxReformNote.classList.add('empty');
                 taxReformText.textContent = '-';
@@ -674,6 +680,27 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 { threshold: 45000, rate: 32.5, color: '#a78bfa' },
                 { threshold: 120000, rate: 37, color: '#8b5cf6' },
                 { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2023–24': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 19, color: '#c4b5fd' },
+                { threshold: 45000, rate: 32.5, color: '#a78bfa' },
+                { threshold: 120000, rate: 37, color: '#8b5cf6' },
+                { threshold: 180000, rate: 45, color: '#7c3aed' }
+            ],
+            '2024–25': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 16, color: '#c4b5fd' },
+                { threshold: 45000, rate: 30, color: '#a78bfa' },
+                { threshold: 135000, rate: 37, color: '#8b5cf6' },
+                { threshold: 190000, rate: 45, color: '#7c3aed' }
+            ],
+            '2025–26': [
+                { threshold: 0, rate: 0, color: '#f4f0fe' },
+                { threshold: 18200, rate: 16, color: '#c4b5fd' },
+                { threshold: 45000, rate: 30, color: '#a78bfa' },
+                { threshold: 135000, rate: 37, color: '#8b5cf6' },
+                { threshold: 190000, rate: 45, color: '#7c3aed' }
             ]
         };
         
@@ -714,7 +741,8 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     if (i === 0 || bracket.threshold === 18200 || bracket.threshold === 37000 || 
                         bracket.threshold === 45000 || bracket.threshold === 80000 || 
                         bracket.threshold === 87000 || bracket.threshold === 90000 || 
-                        bracket.threshold === 120000 || bracket.threshold === 180000) {
+                        bracket.threshold === 120000 || bracket.threshold === 135000 ||
+                        bracket.threshold === 180000 || bracket.threshold === 190000) {
                         const label = document.createElement('div');
                         label.className = 'tax-bracket-label';
                         const position = (start / maxIncome) * 100;
