@@ -464,7 +464,7 @@ def main():
 
     <!-- Stylesheets and scripts -->
     <link rel="stylesheet" href="/styles.css">
-    <script src="plotly-latest.min.js"></script>
+    <script src="plotly-3.0.1.min.js" charset="utf-8" defer></script>
 </head>
 <body>
     <div class="container">
@@ -590,10 +590,18 @@ def main():
 </body>
 </html>'''
 
-    script_content = '''// Embedded data
-const rawData = ''' + data_json + ''';
+    script_content = '''// Wait for Plotly to be loaded
+if (typeof Plotly === 'undefined') {
+    window.addEventListener('load', initChart);
+} else {
+    initChart();
+}
 
-// Pre-calculated maximums for each combination
+function initChart() {
+    // Embedded data
+    const rawData = ''' + data_json + ''';
+
+    // Pre-calculated maximums for each combination
 const maximums = {
     stacked: {
         individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
@@ -1529,7 +1537,9 @@ function updateNavButtons() {
 }
 
 // Initialize nav button states
-updateNavButtons();'''
+updateNavButtons();
+
+} // End of initChart function'''
     
     # Create public directory if it doesn't exist
     import os
