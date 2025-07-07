@@ -1100,11 +1100,13 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         document.getElementById('colorBy').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, this.value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('totalBy').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('stackToggle').addEventListener('change', function() {
@@ -1112,21 +1114,25 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             const stackIcon = document.getElementById('stackIcon');
             stackIcon.textContent = this.checked ? '≡' : '⦀';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('percentageToggle').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('logToggle').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('cumulativeToggle').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
         });
         
         document.getElementById('playButton').addEventListener('click', function() {
@@ -1148,6 +1154,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     currentFrame = (currentFrame + 1) % years.length;
                     updateChart(currentFrame, currentColorBy, currentStackMode);
                     updateNavButtons();
+                    updateURLParams();
                     
                     if (currentFrame === years.length - 1) {
                         clearInterval(animationInterval);
@@ -1348,8 +1355,102 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             };
         })(Plotly.addTraces);
         
-        // Initialize chart with percentage and cumulative enabled by default
-        updateChart(0, 'age_range_display', 'stack');
+        // URL parameter handling
+        function getURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Map short parameter names to full values
+            const colorByMap = {
+                'n': 'none',
+                'a': 'age_range_display', 
+                's': 'sex',
+                't': 'taxable_status'
+            };
+            
+            const totalByMap = {
+                'i': 'individuals_count',
+                'inc': 'total_income_amount',
+                'tax': 'net_tax_amount'
+            };
+            
+            return {
+                colorBy: colorByMap[params.get('c')] || 'age_range_display',
+                totalBy: totalByMap[params.get('m')] || 'net_tax_amount',
+                stack: params.get('st') !== '0',  // default true, 0 = false
+                percentage: params.get('p') !== '0',  // default true, 0 = false
+                cumulative: params.get('cu') !== '0',  // default true, 0 = false
+                log: params.get('l') === '1',  // default false, 1 = true
+                year: params.get('y') || years[0]
+            };
+        }
+        
+        function updateURLParams() {
+            const params = new URLSearchParams();
+            
+            // Map full values to short parameter names
+            const colorByReverseMap = {
+                'none': 'n',
+                'age_range_display': 'a',
+                'sex': 's',
+                'taxable_status': 't'
+            };
+            
+            const totalByReverseMap = {
+                'individuals_count': 'i',
+                'total_income_amount': 'inc',
+                'net_tax_amount': 'tax'
+            };
+            
+            const colorBy = document.getElementById('colorBy').value;
+            const totalBy = document.getElementById('totalBy').value;
+            
+            // Only add parameters that differ from defaults
+            if (colorBy !== 'age_range_display') {
+                params.set('c', colorByReverseMap[colorBy]);
+            }
+            if (totalBy !== 'net_tax_amount') {
+                params.set('m', totalByReverseMap[totalBy]);
+            }
+            if (!document.getElementById('stackToggle').checked) {
+                params.set('st', '0');
+            }
+            if (!document.getElementById('percentageToggle').checked) {
+                params.set('p', '0');
+            }
+            if (!document.getElementById('cumulativeToggle').checked) {
+                params.set('cu', '0');
+            }
+            if (document.getElementById('logToggle').checked) {
+                params.set('l', '1');
+            }
+            if (years[currentFrame] !== years[0]) {
+                params.set('y', years[currentFrame]);
+            }
+            
+            const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', newURL);
+        }
+        
+        // Initialize from URL parameters
+        const urlParams = getURLParams();
+        document.getElementById('colorBy').value = urlParams.colorBy;
+        document.getElementById('totalBy').value = urlParams.totalBy;
+        document.getElementById('stackToggle').checked = urlParams.stack;
+        document.getElementById('percentageToggle').checked = urlParams.percentage;
+        document.getElementById('cumulativeToggle').checked = urlParams.cumulative;
+        document.getElementById('logToggle').checked = urlParams.log;
+        
+        // Find the year index
+        const yearIndex = years.indexOf(urlParams.year);
+        currentFrame = yearIndex >= 0 ? yearIndex : 0;
+        
+        // Update stack icon based on initial state
+        document.getElementById('stackIcon').textContent = urlParams.stack ? '≡' : '⦀';
+        
+        // Initialize chart with URL parameters
+        updateChart(currentFrame, urlParams.colorBy, urlParams.stack ? 'stack' : 'group');
+        updateNavButtons();
+        updateURLParams();
         
         // Handle slider events
         document.getElementById('chart').on('plotly_sliderchange', function(eventdata) {
@@ -1358,6 +1459,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
                 updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
                 updateNavButtons();
+                updateURLParams();
             }
         });
         
@@ -1375,6 +1477,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     currentFrame--;
                     updateChart(currentFrame, colorBy, stackMode);
                     updateNavButtons();
+                    updateURLParams();
                 }
             } else if (event.key === 'ArrowRight' || event.key === 'Right') {
                 event.preventDefault();
@@ -1382,6 +1485,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     currentFrame++;
                     updateChart(currentFrame, colorBy, stackMode);
                     updateNavButtons();
+                    updateURLParams();
                 }
             }
         });
@@ -1402,6 +1506,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 currentFrame--;
                 updateChart(currentFrame, colorBy, stackMode);
                 updateNavButtons();
+                updateURLParams();
             }
         });
         
@@ -1413,6 +1518,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 currentFrame++;
                 updateChart(currentFrame, colorBy, stackMode);
                 updateNavButtons();
+                updateURLParams();
             }
         });
         
