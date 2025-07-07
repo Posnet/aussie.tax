@@ -489,6 +489,12 @@ def main():
             box-sizing: border-box;
         }
         
+        @media (max-width: 768px) {
+            .container {
+                padding: 4px;
+            }
+        }
+        
         .header {
             background: var(--bg-secondary);
             padding: 6px 10px;
@@ -499,6 +505,13 @@ def main():
             gap: 15px;
             align-items: stretch;
             position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
         
         h1 {
@@ -518,12 +531,26 @@ def main():
             height: 64px;
         }
         
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+                height: auto;
+            }
+        }
+        
         .selectors-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
             flex: 1;
             height: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .selectors-group {
+                height: auto;
+            }
         }
         
         .toggles-group {
@@ -533,6 +560,13 @@ def main():
             flex: 0 0 auto;
             height: 100%;
             justify-content: space-between;
+        }
+        
+        @media (max-width: 768px) {
+            .toggles-group {
+                height: auto;
+                justify-content: flex-start;
+            }
         }
         
         .play-button-group {
@@ -546,6 +580,13 @@ def main():
         
         .selectors-group .control-group select {
             width: 160px;
+        }
+        
+        @media (max-width: 768px) {
+            .selectors-group .control-group select {
+                width: 100%;
+                min-width: 140px;
+            }
         }
         
         .control-group {
@@ -1433,18 +1474,19 @@ def main():
                     
                     return yAxisConfig;
                 })(),
-                margin: { t: 40, r: 90, b: 220, l: 85 },
+                margin: { t: 40, r: 20, b: 300, l: 85 },
                 showlegend: true,
                 legend: {
-                    orientation: 'v',
-                    yanchor: 'middle',
-                    y: 0.5,
-                    xanchor: 'left',
-                    x: 1.01,
+                    orientation: 'h',
+                    yanchor: 'top',
+                    y: -0.25,
+                    xanchor: 'center',
+                    x: 0.5,
                     font: { size: 11, color: colors.textSecondary },
-                    bgcolor: 'rgba(0,0,0,0)',
+                    bgcolor: colors.bg,
                     bordercolor: colors.border,
-                    borderwidth: 1
+                    borderwidth: 1,
+                    traceorder: 'normal'
                 },
                 hovermode: 'closest',
                 plot_bgcolor: colors.bg,
