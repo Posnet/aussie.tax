@@ -424,6 +424,16 @@ def main():
     <!-- Canonical link to avoid duplicate content issues -->
     <link rel="canonical" href="https://aussie.tax">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D1RYCL13D9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-D1RYCL13D9');
+    </script>
+
     <!-- Schema.org structured data for rich snippets -->
     <script type="application/ld+json">
     {
