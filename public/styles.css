@@ -686,4 +686,8 @@ body.dark-theme button:hover {
     .mobile-only {
         display: flex;
     }
+    
+    .tax-brackets-header {
+        display: none;
+    }
 }

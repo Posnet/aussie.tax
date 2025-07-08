@@ -400,19 +400,19 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             
             if (year === '2012–13') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = 'Tax-free threshold increased from $6,000 to $18,200';
+                taxReformText.textContent = 'Tax-free increased from $6,000 to $18,200';
             } else if (year === '2014–15' || year === '2015–16') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = 'Budget Repair Levy: 45% + 2% = 47% effective rate >$180k';
+                taxReformText.textContent = 'Repair Levy: 45% + 2% = 47% rate >$180k';
             } else if (year === '2016–17') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = '32.5% bracket to $87k; Budget Repair Levy: 47% on >$180k';
+                taxReformText.textContent = '32.5% to $87k; Repair Levy: 47% on >$180k';
             } else if (year === '2020–21') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = 'Tax cuts: 32.5% bracket extended to $120k, 37% to $180k';
+                taxReformText.textContent = 'Tax cuts: 32.5% to $120k, 37% to $180k';
             } else if (year === '2024–25' || year === '2025–26') {
                 taxReformNote.classList.remove('empty');
-                taxReformText.textContent = 'Stage 3 tax cuts: Lower rates and higher thresholds';
+                taxReformText.textContent = 'Stage 3 tax cuts';
             } else {
                 taxReformNote.classList.add('empty');
                 taxReformText.textContent = '-';
@@ -429,7 +429,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     label: yr,
                     args: [i]
                 })),
-                pad: { t: 40, b: 10 },
+                pad: { t: window.innerWidth <= 768 ? 10 : 40, b: 10 },
                 len: 0.9,
                 x: 0.05,
                 xanchor: 'left',
