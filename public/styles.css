@@ -68,6 +68,12 @@ body {
     font-size: 13px;
 }
 
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+}
+
 /* ===== Layout ===== */
 .container {
     display: flex;
@@ -76,6 +82,12 @@ body {
     padding: 8px;
     box-sizing: border-box;
     overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .container {
+        overflow: visible;
+    }
 }
 
 .header {
@@ -354,6 +366,12 @@ h1 {
     height: calc(100% - 14px);
 }
 
+@media (max-width: 768px) {
+    #chart {
+        height: 100%;
+    }
+}
+
 /* ===== Form Elements ===== */
 select, button {
     padding: 4px 8px;
@@ -628,14 +646,16 @@ body.dark-theme button:hover {
 @media (max-width: 768px) {
     .container {
         padding: 4px;
-        height: 100vh;
-        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
     
     .header {
         grid-template-columns: 1fr;
         gap: 10px;
         order: 2;
+        margin-bottom: 4px;
+        flex: 0 0 auto;
     }
     
     .header h1 {
@@ -644,7 +664,12 @@ body.dark-theme button:hover {
     
     #chart-container {
         order: 1;
+        flex: 1 1 auto;
+        min-height: 350px;
+        margin-bottom: 8px;
+        padding-bottom: 0;
     }
+    
     
     .container {
         flex-direction: column;

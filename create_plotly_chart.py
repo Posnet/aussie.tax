@@ -947,7 +947,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                     return yAxisConfig;
                 })(),
                 margin: window.innerWidth <= 768 ? 
-                    { t: 40, r: 10, b: 180, l: 60 } : 
+                    { t: 20, r: 10, b: 80, l: 60 } : 
                     { t: 40, r: 150, b: 120, l: 70 },
                 showlegend: window.innerWidth > 768,
                 legend: {
@@ -1025,7 +1025,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 len: 0.9,
                 x: 0.05,
                 xanchor: 'left',
-                y: -0.22,
+                y: window.innerWidth <= 768 ? -0.15 : -0.22,
                 yanchor: 'top',
                 bgcolor: colors.bg,
                 bordercolor: colors.border,
@@ -1566,6 +1566,17 @@ function updateNavButtons() {
 
 // Initialize nav button states
 updateNavButtons();
+
+// Force resize on mobile after first render to fix slider text cutoff
+if (window.innerWidth <= 768) {
+    let resizeTriggered = false;
+    document.getElementById('chart').on('plotly_afterplot', function() {
+        if (!resizeTriggered) {
+            resizeTriggered = true;
+            window.dispatchEvent(new Event('resize'));
+        }
+    });
+}
 
 } // End of initChart function'''
     
