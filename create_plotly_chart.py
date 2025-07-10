@@ -720,7 +720,8 @@ def main():
                 <li>Negative incomes (business losses) can affect low bracket totals</li>
                 <li>Capital gains are included in taxable income</li>
                 <li>Excludes people who didn't lodge tax returns</li>
-                <li>Tax calculations include Medicare levy and other levies</li>
+                <li>Tax calculations include income tax, capital gains tax, Medicare levy and other levies</li>
+                <li>Income brackets are based on taxable income, which includes net capital gains</li>
             </ul>
             
             <h3>Source Code</h3>
@@ -1584,7 +1585,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             };
             
             const totalByMap = {
-                'i': 'individuals_count',
+                'ind': 'individuals_count',
                 'inc': 'total_income_amount',
                 'tax': 'net_tax_amount'
             };
@@ -1613,7 +1614,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             };
             
             const totalByReverseMap = {
-                'individuals_count': 'i',
+                'individuals_count': 'ind',
                 'total_income_amount': 'inc',
                 'net_tax_amount': 'tax'
             };
