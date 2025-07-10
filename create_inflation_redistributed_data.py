@@ -1,4 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --quiet
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "pandas",
+#     "numpy", 
+#     "scipy"
+# ]
+# ///
 """
 Create inflation-adjusted dataset by redistributing historical data into 2023-equivalent income brackets.
 This shows how people earning equivalent purchasing power fared across different years.
@@ -6,6 +14,7 @@ This shows how people earning equivalent purchasing power fared across different
 
 import pandas as pd
 import numpy as np
+from scipy import stats
 
 # Inflation factors relative to 2022-23
 inflation_factors = {
@@ -51,27 +60,48 @@ def get_bracket_bounds(bracket_label):
         return 1000001, 2000000  # Use 2M as practical upper bound
     else:
         # Parse strings like '$20,001 to $30,000'
-        parts = bracket_label.replace('$', '').replace(',', '').split(' to ')
-        return int(parts[0]), int(parts[1])
+        try:
+            parts = bracket_label.replace('$', '').replace(',', '').split(' to ')
+            if len(parts) != 2:
+                raise ValueError(f"Expected 2 parts separated by ' to ', got {len(parts)}")
+            return int(parts[0]), int(parts[1])
+        except (ValueError, IndexError) as e:
+            raise ValueError(f"Unable to parse bracket label '{bracket_label}': {e}")
 
 def calculate_overlap(source_min, source_max, target_min, target_max):
-    """Calculate what fraction of source bracket overlaps with target bracket."""
+    """Calculate what fraction of source bracket overlaps with target bracket using right-skewed distribution."""
     # No overlap
     if source_max <= target_min or source_min >= target_max:
         return 0.0
     
-    # Calculate overlap
+    # Handle zero-width source bracket
+    if source_max <= source_min:
+        return 0.0
+    
+    # Calculate overlap bounds
     overlap_min = max(source_min, target_min)
     overlap_max = min(source_max, target_max)
     
-    # Fraction of source bracket that falls in target bracket
-    # Using uniform distribution assumption
-    source_width = source_max - source_min
-    if source_width == 0:
-        return 0.0
+    # Use beta distribution for right-skewed income distribution within bracket
+    # Beta(2, 5) creates a right-skewed distribution with more people at lower incomes
+    # This is more realistic than uniform distribution for income brackets
+    alpha, beta_param = 2.0, 5.0
     
-    overlap_width = overlap_max - overlap_min
-    return overlap_width / source_width
+    # Map bracket bounds to [0, 1] for beta distribution
+    source_range = source_max - source_min
+    overlap_start = (overlap_min - source_min) / source_range
+    overlap_end = (overlap_max - source_min) / source_range
+    
+    # Ensure bounds are valid for beta distribution
+    overlap_start = max(0.0, min(1.0, overlap_start))
+    overlap_end = max(0.0, min(1.0, overlap_end))
+    
+    # Calculate CDF values using beta distribution
+    cdf_start = stats.beta.cdf(overlap_start, alpha, beta_param)
+    cdf_end = stats.beta.cdf(overlap_end, alpha, beta_param)
+    
+    # Return the fraction of people in the overlap region
+    return cdf_end - cdf_start
 
 def redistribute_year_data(year_df, year, inflation_factor):
     """Redistribute one year's data into modern brackets based on inflation adjustment."""
@@ -127,6 +157,9 @@ def main():
     print("Loading original data...")
     df = pd.read_csv('ato_2010-2023.csv')
     
+    # Normalize year format to use em-dashes consistently
+    df['income_year'] = df['income_year'].str.replace('-', '–')
+    
     # Process each year
     all_redistributed = []
     
@@ -134,7 +167,11 @@ def main():
         print(f"\nProcessing {year}...")
         
         year_df = df[df['income_year'] == year]
-        inflation_factor = inflation_factors.get(year, 1.0)
+        
+        if year not in inflation_factors:
+            raise ValueError(f"No inflation factor found for year '{year}'. Available years: {list(inflation_factors.keys())}")
+        
+        inflation_factor = inflation_factors[year]
         
         if year == '2022–23':
             # For 2022-23, no redistribution needed - it's already in 2023 dollars

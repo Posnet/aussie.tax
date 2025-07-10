@@ -70,7 +70,8 @@ body {
 
 @media (max-width: 768px) {
     body {
-        overflow: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 }
 
@@ -86,7 +87,8 @@ body {
 
 @media (max-width: 768px) {
     .container {
-        overflow: visible;
+        overflow-x: hidden;
+        overflow-y: visible;
     }
 }
 
@@ -594,29 +596,23 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
 /* ===== Help Button ===== */
 .help-button {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-    padding: 0;
+    bottom: 8px;
+    right: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 3px 6px;
     background: var(--accent);
     border: 1px solid var(--accent);
-    border-radius: 50%;
     color: var(--bg-secondary);
     cursor: pointer;
     transition: all 0.2s;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    border-radius: 0;
 }
 
 .help-button:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
-    transform: scale(1.1);
 }
 
 /* ===== Modal ===== */
@@ -793,6 +789,7 @@ body.dark-theme button:hover {
         padding: 4px;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
     
     .header {
@@ -813,11 +810,6 @@ body.dark-theme button:hover {
         min-height: 350px;
         margin-bottom: 8px;
         padding-bottom: 0;
-    }
-    
-    
-    .container {
-        flex-direction: column;
     }
     
     .controls {
@@ -859,5 +851,31 @@ body.dark-theme button:hover {
     
     .tax-brackets-header {
         display: none;
+    }
+    
+    .help-button:not(.mobile-only) {
+        display: none;
+    }
+    
+    .help-button.mobile-only {
+        display: block;
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        z-index: 100;
+    }
+    
+    .header {
+        position: relative;
+    }
+    
+    .modal-content {
+        margin: 10px;
+        padding: 15px;
+        width: calc(100% - 20px);
+        max-width: none;
+        max-height: calc(100vh - 20px);
+        border-radius: 4px;
+        box-sizing: border-box;
     }
 }

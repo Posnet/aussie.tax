@@ -183,6 +183,7 @@
                 <div class="tax-brackets-viz" id="taxBracketsViz"></div>
             </div>
         </div>
+        <button class="help-button mobile-only" id="helpButtonMobile">?</button>
         
         <div id="chart-container">
             <div id="chart"></div>
@@ -221,13 +222,15 @@
             
             <h3>Inflation Adjustment ($<sub>23</sub>)</h3>
             <p>When enabled, this feature shows "equivalent earners" - people who had the same purchasing power in historical years as someone earning that amount in 2022-23.</p>
-            <p><strong>How it works:</strong></p>
+            <p><strong>Technical Method:</strong></p>
             <ul>
-                <li>Uses RBA inflation data to convert historical incomes to 2022-23 dollars</li>
-                <li>Redistributes people into modern income brackets based on their inflation-adjusted income</li>
-                <li>Example: Someone earning $50,000 in 2010-11 had the purchasing power of $67,000 in 2022-23</li>
+                <li><strong>Step 1:</strong> Convert historical income brackets to 2022-23 dollars using RBA inflation factors</li>
+                <li><strong>Step 2:</strong> Redistribute taxpayers from inflated historical brackets into modern 2022-23 brackets</li>
+                <li><strong>Step 3:</strong> Use beta distribution (α=2, β=5) to model realistic income distribution within each bracket - assumes more people earn closer to the bottom of each bracket</li>
+                <li><strong>Step 4:</strong> Calculate overlap between inflated source brackets and target brackets, proportionally allocating taxpayers</li>
             </ul>
-            <p><strong>Important:</strong> This shows where people <em>would</em> be distributed if their purchasing power was translated to today's dollars, not actual income growth.</p>
+            <p><strong>Example:</strong> The $30,001-$40,000 bracket in 2010-11 becomes $40,201-$53,600 in 2022-23 dollars (×1.34 inflation). These people are then redistributed across multiple modern brackets: some into $40,001-$50,000, others into $50,001-$60,000.</p>
+            <p><strong>Key Insight:</strong> This shows how income brackets have shifted in real purchasing power terms - a $50,000 earner today has less purchasing power than a $50,000 earner in 2010.</p>
             
             <h3>View Options</h3>
             <ul>
@@ -252,9 +255,8 @@
                 <li>Tax calculations include Medicare levy and other levies</li>
             </ul>
             
-            <h3>Technical Details</h3>
-            <p>Built with Python, Plotly.js, and vanilla JavaScript. Source code and data processing scripts available on request.</p>
-            <p>Contact: <a href="mailto:aussie-tax@denialof.services">aussie-tax@denialof.services</a></p>
+            <h3>Source Code</h3>
+            <p><a href="https://github.com/Posen2101024/aussie.tax" target="_blank" rel="noopener noreferrer">github.com/Posen2101024/aussie.tax</a></p>
         </div>
     </div>
     

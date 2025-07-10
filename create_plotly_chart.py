@@ -1,4 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --quiet
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "pandas",
+#     "plotly"
+# ]
+# ///
 """
 Create an animated tax visualisation using Plotly.
 """
@@ -646,6 +653,7 @@ def main():
                 <div class="tax-brackets-viz" id="taxBracketsViz"></div>
             </div>
         </div>
+        <button class="help-button mobile-only" id="helpButtonMobile">?</button>
         
         <div id="chart-container">
             <div id="chart"></div>
@@ -715,9 +723,8 @@ def main():
                 <li>Tax calculations include Medicare levy and other levies</li>
             </ul>
             
-            <h3>Technical Details</h3>
-            <p>Built with Python, Plotly.js, and vanilla JavaScript. Source code and data processing scripts available on request.</p>
-            <p>Contact: <a href="mailto:aussie-tax@denialof.services">aussie-tax@denialof.services</a></p>
+            <h3>Source Code</h3>
+            <p><a href="https://github.com/Posen2101024/aussie.tax" target="_blank" rel="noopener noreferrer">github.com/Posen2101024/aussie.tax</a></p>
         </div>
     </div>
     
@@ -1759,11 +1766,20 @@ if (window.innerWidth <= 768) {
 // Modal functionality
 const modal = document.getElementById('helpModal');
 const helpBtn = document.getElementById('helpButton');
+const helpBtnMobile = document.getElementById('helpButtonMobile');
 const closeBtn = document.getElementById('modalClose');
 
 helpBtn.onclick = function() {
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Also handle mobile help button
+if (helpBtnMobile) {
+    helpBtnMobile.onclick = function() {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
 }
 
 closeBtn.onclick = function() {
@@ -1784,6 +1800,14 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape' && modal.style.display === 'block') {
         modal.style.display = 'none';
         document.body.style.overflow = ''; // Restore scrolling
+    }
+});
+
+// Open modal with shift + ? (which is just ?)
+document.addEventListener('keydown', function(event) {
+    if (event.key === '?' && modal.style.display !== 'block') {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
 });
 

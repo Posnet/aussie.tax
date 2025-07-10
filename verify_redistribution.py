@@ -1,4 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --quiet
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "pandas",
+#     "numpy"
+# ]
+# ///
 """
 Verify that the redistributed inflation-adjusted data maintains integrity:
 1. Total individuals should remain the same (or very close due to rounding)
@@ -23,7 +30,7 @@ inflation_factors = {
     '2019–20': 1.14,
     '2020–21': 1.12,
     '2021–22': 1.07,
-    '2022–23': 1.00
+    '2022-23': 1.00
 }
 
 def verify_redistribution():
