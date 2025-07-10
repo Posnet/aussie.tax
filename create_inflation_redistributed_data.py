@@ -112,8 +112,8 @@ def redistribute_year_data(year_df, year, inflation_factor):
                     'sex': sex,
                     'taxable_status': taxable_status,
                     'age_range_display': age_range,
-                    # Note: do NOT inflate individuals count
-                    'individuals_count': total_individuals * overlap,
+                    # Note: do NOT inflate individuals count - round to nearest integer
+                    'individuals_count': round(total_individuals * overlap),
                     # DO inflate income and tax amounts
                     'total_income_amount': total_income * overlap * inflation_factor,
                     'net_tax_amount': total_tax * overlap * inflation_factor
