@@ -519,6 +519,35 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     outline-offset: 2px;
 }
 
+/* Toggle tooltips */
+.control-group label[data-tooltip] {
+    position: relative;
+}
+
+.control-group label[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.control-group label[data-tooltip]:hover::after {
+    opacity: 1;
+}
+
 /* ===== Theme Toggle ===== */
 .theme-toggle {
     position: absolute;

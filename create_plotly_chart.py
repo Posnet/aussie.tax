@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create an animated tax visualization using Plotly.
+Create an animated tax visualisation using Plotly.
 """
 
 import pandas as pd
@@ -403,14 +403,14 @@ def main():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aussie Tax</title>
-    <meta name="description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta name="description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="author" content="Posnet">
     <meta name="contact" content="aussie-tax@denialof.services">
     <meta name="theme-color" content="#02335c">
 
     <!-- Open Graph meta tags for better social media sharing -->
     <meta property="og:title" content="Aussie Tax">
-    <meta property="og:description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta property="og:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://aussie.tax">
     <meta property="og:image" content="https://aussie.tax/tax_cut_share.png">
@@ -418,7 +418,7 @@ def main():
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Aussie Tax">
-    <meta name="twitter:description" content="Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta name="twitter:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="twitter:image" content="https://aussie.tax/tax_cut_share.png">
 
     <!-- Canonical link to avoid duplicate content issues -->
@@ -440,7 +440,7 @@ def main():
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Aussie Tax",
-      "description": "Interactive visualization of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.",
+      "description": "Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.",
       "author": {
         "@type": "Person",
         "name": "Posnet",
@@ -475,7 +475,7 @@ def main():
                 <div class="controls">
                     <div class="selectors-group">
                         <div class="control-group">
-                            <label for="colorBy">Color by:</label>
+                            <label for="colorBy">Colour by:</label>
                             <select id="colorBy">
                                 <option value="none">None</option>
                                 <option value="age_range_display" selected>Age Group</option>
@@ -497,7 +497,7 @@ def main():
                     <div class="toggles-group">
                         <div class="toggles-row">
                             <div class="control-group">
-                                <label for="stackToggle">
+                                <label for="stackToggle" data-tooltip="Stack/Group bars">
                                     <input type="checkbox" id="stackToggle" checked>
                                     <div class="toggle-switch"></div>
                                     <span id="stackIcon" class="toggle-icon">≡</span>
@@ -505,7 +505,7 @@ def main():
                             </div>
                             
                             <div class="control-group">
-                                <label for="percentageToggle">
+                                <label for="percentageToggle" data-tooltip="Show as percentage">
                                     <input type="checkbox" id="percentageToggle" checked>
                                     <div class="toggle-switch"></div>
                                     <span class="toggle-icon">％</span>
@@ -513,7 +513,7 @@ def main():
                             </div>
                             
                             <div class="control-group">
-                                <label for="cumulativeToggle">
+                                <label for="cumulativeToggle" data-tooltip="Cumulative view">
                                     <input type="checkbox" id="cumulativeToggle" checked>
                                     <div class="toggle-switch"></div>
                                     <span class="toggle-icon">∑</span>
@@ -521,7 +521,7 @@ def main():
                             </div>
                             
                             <div class="control-group">
-                                <label for="logToggle">
+                                <label for="logToggle" data-tooltip="Logarithmic scale">
                                     <input type="checkbox" id="logToggle">
                                     <div class="toggle-switch"></div>
                                     <span class="toggle-icon">L<sub>10</sub></span>
@@ -1296,7 +1296,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             ]
         };
         
-        // Function to update tax brackets visualization
+        // Function to update tax brackets visualisation
         function updateTaxBrackets(year) {
             const brackets = taxBrackets[year];
             if (!brackets) return;
@@ -1312,7 +1312,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             const labelsContainer = document.createElement('div');
             labelsContainer.className = 'tax-bracket-labels';
             
-            const maxIncome = 200000; // Cap visualization at $200k
+            const maxIncome = 200000; // Cap visualisation at $200k
             
             brackets.forEach((bracket, i) => {
                 const nextBracket = brackets[i + 1];
@@ -1597,7 +1597,7 @@ if (window.innerWidth <= 768) {
     print("  - Responsive design that fills the screen")
     print("  - Plotly stacked/grouped bar chart")
     print("  - Year slider with scrubbing capability")
-    print("  - Color by Gender, Taxable Status, or Age Group")
+    print("  - Colour by Gender, Taxable Status, or Age Group")
     print("  - Play/pause animation")
     print("  - Real-time statistics display")
 

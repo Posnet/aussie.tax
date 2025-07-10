@@ -704,7 +704,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             ]
         };
         
-        // Function to update tax brackets visualization
+        // Function to update tax brackets visualisation
         function updateTaxBrackets(year) {
             const brackets = taxBrackets[year];
             if (!brackets) return;
@@ -720,7 +720,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             const labelsContainer = document.createElement('div');
             labelsContainer.className = 'tax-bracket-labels';
             
-            const maxIncome = 200000; // Cap visualization at $200k
+            const maxIncome = 200000; // Cap visualisation at $200k
             
             brackets.forEach((bracket, i) => {
                 const nextBracket = brackets[i + 1];
