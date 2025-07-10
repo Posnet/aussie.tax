@@ -591,6 +591,122 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     opacity: 1;
 }
 
+/* ===== Help Button ===== */
+.help-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    padding: 0;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    color: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.help-button:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    transform: scale(1.1);
+}
+
+/* ===== Modal ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    margin: 50px auto;
+    padding: 30px;
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 700px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+}
+
+.modal-close {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+    margin: -10px -10px 0 0;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: var(--text-primary);
+}
+
+.modal h2 {
+    color: var(--text-primary);
+    font-size: 18px;
+    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal h3 {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 20px 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal p, .modal li {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.modal ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.modal a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.modal a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.modal code {
+    background: var(--bg-tertiary);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--text-primary);
+}
+
 /* ===== Helper Text ===== */
 .data-source, .current-year {
     margin-top: auto;

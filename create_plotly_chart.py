@@ -593,10 +593,10 @@ def main():
                             </div>
                             
                             <div class="control-group">
-                                <label for="inflationToggle" data-tooltip="Show equivalent earners (2022-23 dollars)">
+                                <label for="inflationToggle" data-tooltip="Show equivalent earners (infl. 2022-23 $)">
                                     <input type="checkbox" id="inflationToggle">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">$₂₃</span>
+                                    <span class="toggle-icon">$<sub>23</sub></span>
                                 </label>
                             </div>
                         </div>
@@ -658,6 +658,69 @@ def main():
             </a>
         </div>
     </div>
+    
+    <!-- Help Button -->
+    <button class="help-button" id="helpButton">?</button>
+    
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h2>About This Visualisation</h2>
+            
+            <h3>Data Source</h3>
+            <p>This visualisation uses data from the Australian Taxation Office (ATO) Taxation Statistics, specifically the Individual Sample Files from 2010-11 to 2022-23. The data represents all Australian individual taxpayers who lodged tax returns.</p>
+            
+            <h3>Key Metrics</h3>
+            <ul>
+                <li><strong>Individuals:</strong> Number of taxpayers in each income bracket</li>
+                <li><strong>Total Income:</strong> Combined taxable income of all individuals</li>
+                <li><strong>Tax Paid:</strong> Total net tax paid after offsets and deductions</li>
+                <li><strong>Effective Rate:</strong> Percentage of income paid as tax (tax ÷ income)</li>
+            </ul>
+            
+            <h3>Income Brackets</h3>
+            <p>The ATO groups taxpayers into income ranges. The highest bracket "$1,000,001 or more" includes all very high earners, which can skew averages in that bracket.</p>
+            
+            <h3>Inflation Adjustment ($<sub>23</sub>)</h3>
+            <p>When enabled, this feature shows "equivalent earners" - people who had the same purchasing power in historical years as someone earning that amount in 2022-23.</p>
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li>Uses RBA inflation data to convert historical incomes to 2022-23 dollars</li>
+                <li>Redistributes people into modern income brackets based on their inflation-adjusted income</li>
+                <li>Example: Someone earning $50,000 in 2010-11 had the purchasing power of $67,000 in 2022-23</li>
+            </ul>
+            <p><strong>Important:</strong> This shows where people <em>would</em> be distributed if their purchasing power was translated to today's dollars, not actual income growth.</p>
+            
+            <h3>View Options</h3>
+            <ul>
+                <li><strong>Stack/Group (≡/⦀):</strong> Stack bars on top of each other or place side by side</li>
+                <li><strong>Percentage (%):</strong> Show values as percentage of year total instead of absolute numbers</li>
+                <li><strong>Cumulative (∑):</strong> Each bar includes all lower income brackets</li>
+                <li><strong>Logarithmic (L<sub>10</sub>):</strong> Use log scale for better visibility of small values</li>
+            </ul>
+            
+            <h3>Demographics</h3>
+            <ul>
+                <li><strong>Age Groups:</strong> Based on age at end of financial year</li>
+                <li><strong>Gender:</strong> As recorded in tax return</li>
+                <li><strong>Taxable Status:</strong> Whether net tax was payable after deductions/offsets</li>
+            </ul>
+            
+            <h3>Known Limitations</h3>
+            <ul>
+                <li>Negative incomes (business losses) can affect low bracket totals</li>
+                <li>Capital gains are included in taxable income</li>
+                <li>Excludes people who didn't lodge tax returns</li>
+                <li>Tax calculations include Medicare levy and other levies</li>
+            </ul>
+            
+            <h3>Technical Details</h3>
+            <p>Built with Python, Plotly.js, and vanilla JavaScript. Source code and data processing scripts available on request.</p>
+            <p>Contact: <a href="mailto:aussie-tax@denialof.services">aussie-tax@denialof.services</a></p>
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>'''
@@ -805,8 +868,8 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             } else {
                 switch(totalBy) {
                     case 'individuals_count': title = 'Individuals'; break;
-                    case 'total_income_amount': title = isInflationAdjusted ? 'Total Income (2022-23 dollars)' : 'Total Income (AUD)'; break;
-                    case 'net_tax_amount': title = isInflationAdjusted ? 'Tax Paid (2022-23 dollars)' : 'Tax Paid (AUD)'; break;
+                    case 'total_income_amount': title = isInflationAdjusted ? 'Total Income (2022-23 $)' : 'Total Income (AUD)'; break;
+                    case 'net_tax_amount': title = isInflationAdjusted ? 'Tax Paid (2022-23 $)' : 'Tax Paid (AUD)'; break;
                     default: title = 'Value';
                 }
             }
@@ -1692,6 +1755,37 @@ if (window.innerWidth <= 768) {
         }
     });
 }
+
+// Modal functionality
+const modal = document.getElementById('helpModal');
+const helpBtn = document.getElementById('helpButton');
+const closeBtn = document.getElementById('modalClose');
+
+helpBtn.onclick = function() {
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+closeBtn.onclick = function() {
+    modal.style.display = 'none';
+    document.body.style.overflow = ''; // Restore scrolling
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && modal.style.display === 'block') {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+});
 
 } // End of initChart function'''
     
