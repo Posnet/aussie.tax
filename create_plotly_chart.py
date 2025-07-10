@@ -28,6 +28,9 @@ def main():
     # Load the normalized data
     df = pd.read_csv('ato_2010-2023.csv')
     
+    # Also load the inflation-redistributed data
+    df_redistributed = pd.read_csv('ato_2010-2023_inflation_redistributed.csv')
+    
     # Get unique values for controls
     years = sorted(df['income_year'].unique())
     
@@ -83,11 +86,45 @@ def main():
     # Convert to JSON for embedding
     data_json = all_data.to_json(orient='records')
     
+    # Process redistributed data the same way
+    plot_data_redistributed = []
+    
+    for year in years:
+        year_df = df_redistributed[df_redistributed['income_year'] == year].copy()
+        
+        # Group by income range and aggregate
+        grouped = year_df.groupby(['normalized_income_range', 'income_range_display', 'sex', 'taxable_status', 'age_range_display']).agg({
+            'individuals_count': 'sum',
+            'total_income_amount': 'sum',
+            'net_tax_amount': 'sum'
+        }).reset_index()
+        
+        # Add year column
+        grouped['year'] = year
+        plot_data_redistributed.append(grouped)
+    
+    # Combine all redistributed data
+    all_data_redistributed = pd.concat(plot_data_redistributed, ignore_index=True)
+    
+    # Create sort order for income ranges
+    all_data_redistributed['income_range_order'] = all_data_redistributed['normalized_income_range'].apply(
+        lambda x: income_range_order.index(x) if x in income_range_order else 999
+    )
+    all_data_redistributed = all_data_redistributed.sort_values(['year', 'income_range_order'])
+    
+    # Convert redistributed data to JSON
+    data_redistributed_json = all_data_redistributed.to_json(orient='records')
+    
     # Calculate global maximums for each colorBy option
     # For stacked mode - always sum across all demographics per income range
     stacked_max_individuals = all_data.groupby(['year', 'normalized_income_range'])['individuals_count'].sum().max()
     stacked_max_income = all_data.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max()
     stacked_max_tax = all_data.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
+    
+    # Also calculate maximums for redistributed data
+    stacked_max_individuals_redis = all_data_redistributed.groupby(['year', 'normalized_income_range'])['individuals_count'].sum().max()
+    stacked_max_income_redis = all_data_redistributed.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max()
+    stacked_max_tax_redis = all_data_redistributed.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
     
     # Calculate cumulative maximums - these will be much larger
     cumulative_max = {}
@@ -132,6 +169,33 @@ def main():
         'individuals_count': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['individuals_count'].sum().max(),
         'total_income_amount': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['total_income_amount'].sum().max(),
         'net_tax_amount': all_data.groupby(['year', 'normalized_income_range', 'taxable_status'])['net_tax_amount'].sum().max()
+    }
+    
+    # Calculate grouped maximums for redistributed data
+    grouped_max_redis = {}
+    
+    grouped_max_redis['none'] = {
+        'individuals_count': all_data_redistributed.groupby(['year', 'normalized_income_range'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data_redistributed.groupby(['year', 'normalized_income_range'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data_redistributed.groupby(['year', 'normalized_income_range'])['net_tax_amount'].sum().max()
+    }
+    
+    grouped_max_redis['age_range_display'] = {
+        'individuals_count': all_data_redistributed.groupby(['year', 'normalized_income_range', 'age_range_display'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'age_range_display'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'age_range_display'])['net_tax_amount'].sum().max()
+    }
+    
+    grouped_max_redis['sex'] = {
+        'individuals_count': all_data_redistributed.groupby(['year', 'normalized_income_range', 'sex'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'sex'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'sex'])['net_tax_amount'].sum().max()
+    }
+    
+    grouped_max_redis['taxable_status'] = {
+        'individuals_count': all_data_redistributed.groupby(['year', 'normalized_income_range', 'taxable_status'])['individuals_count'].sum().max(),
+        'total_income_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'taxable_status'])['total_income_amount'].sum().max(),
+        'net_tax_amount': all_data_redistributed.groupby(['year', 'normalized_income_range', 'taxable_status'])['net_tax_amount'].sum().max()
     }
     
     print(f"Debug maximums:")
@@ -527,6 +591,14 @@ def main():
                                     <span class="toggle-icon">L<sub>10</sub></span>
                                 </label>
                             </div>
+                            
+                            <div class="control-group">
+                                <label for="inflationToggle" data-tooltip="Show equivalent earners (2022-23 dollars)">
+                                    <input type="checkbox" id="inflationToggle">
+                                    <div class="toggle-switch"></div>
+                                    <span class="toggle-icon">$₂₃</span>
+                                </label>
+                            </div>
                         </div>
                         
                         <div class="control-group play-button-group">
@@ -600,15 +672,32 @@ if (typeof Plotly === 'undefined') {
 function initChart() {
     // Embedded data
     const rawData = ''' + data_json + ''';
+    const rawDataRedistributed = ''' + data_redistributed_json + ''';
+    
+    // Store both datasets
+    const datasets = {
+        nominal: rawData,
+        redistributed: rawDataRedistributed
+    };
 
     // Pre-calculated maximums for each combination
 const maximums = {
-    stacked: {
-        individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
-        total_income_amount: ''' + str(int(stacked_max_income)) + ''',
-        net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
+    nominal: {
+        stacked: {
+            individuals_count: ''' + str(int(stacked_max_individuals)) + ''',
+            total_income_amount: ''' + str(int(stacked_max_income)) + ''',
+            net_tax_amount: ''' + str(int(stacked_max_tax)) + '''
+        },
+        grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + '''
     },
-    grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max.items()}) + ''',
+    redistributed: {
+        stacked: {
+            individuals_count: ''' + str(int(stacked_max_individuals_redis)) + ''',
+            total_income_amount: ''' + str(int(stacked_max_income_redis)) + ''',
+            net_tax_amount: ''' + str(int(stacked_max_tax_redis)) + '''
+        },
+        grouped: ''' + json.dumps({k: {col: int(v[col]) for col in v} for k, v in grouped_max_redis.items()}) + '''
+    },
     cumulative: {
         individuals_count: ''' + str(int(cumulative_max['individuals_count'])) + ''',
         total_income_amount: ''' + str(int(cumulative_max['total_income_amount'])) + ''',
@@ -626,9 +715,16 @@ const percentageMaximums = {
     grouped: ''' + json.dumps(grouped_pct_max) + '''
 };
 
+// Get current dataset based on inflation toggle
+function getCurrentData() {
+    const isInflationAdjusted = document.getElementById('inflationToggle') && 
+                                document.getElementById('inflationToggle').checked;
+    return isInflationAdjusted ? datasets.redistributed : datasets.nominal;
+}
+
 // Parse and prepare data
-const data = rawData;
-const years = [...new Set(data.map(d => d.year))].sort();
+let data = getCurrentData();
+const years = [...new Set(datasets.nominal.map(d => d.year))].sort();
 
 // Use the proper order for income ranges
 const incomeRanges = [
@@ -702,15 +798,15 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         });
         
         // Helper functions for Y-axis formatting
-        function getYAxisTitle(totalBy, valueMode, isCumulative) {
+        function getYAxisTitle(totalBy, valueMode, isCumulative, isInflationAdjusted) {
             let title = '';
             if (valueMode === 'percentage') {
                 title = 'Percentage';
             } else {
                 switch(totalBy) {
                     case 'individuals_count': title = 'Individuals'; break;
-                    case 'total_income_amount': title = 'Total Income (AUD)'; break;
-                    case 'net_tax_amount': title = 'Tax Paid (AUD)'; break;
+                    case 'total_income_amount': title = isInflationAdjusted ? 'Total Income (2022-23 dollars)' : 'Total Income (AUD)'; break;
+                    case 'net_tax_amount': title = isInflationAdjusted ? 'Tax Paid (2022-23 dollars)' : 'Tax Paid (AUD)'; break;
                     default: title = 'Value';
                 }
             }
@@ -742,11 +838,16 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         
         function updateChart(yearIndex, colorBy, stackMode) {
             const year = years[yearIndex];
+            
+            // Update data based on inflation toggle
+            data = getCurrentData();
+            
             const yearData = data.filter(d => d.year === year);
             const valueMode = document.getElementById('percentageToggle').checked ? 'percentage' : 'absolute';
             const logScale = document.getElementById('logToggle').checked;
             const isCumulative = document.getElementById('cumulativeToggle').checked;
             const isStacked = document.getElementById('stackToggle').checked;
+            const isInflationAdjusted = document.getElementById('inflationToggle').checked;
             stackMode = isStacked ? 'stack' : 'group';
             const totalBy = document.getElementById('totalBy').value;
             
@@ -875,20 +976,22 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 yaxis: (() => {
                     // Get the correct maximum for current settings
                     let maxVal;
+                    const datasetKey = isInflationAdjusted ? 'redistributed' : 'nominal';
+                    
                     if (isCumulative) {
                         // For cumulative, use the pre-calculated cumulative maximums
                         maxVal = maximums.cumulative[totalBy];
                     } else if (stackMode === 'stack') {
-                        maxVal = maximums.stacked[totalBy];
+                        maxVal = maximums[datasetKey].stacked[totalBy];
                     } else {
-                        maxVal = maximums.grouped[colorBy][totalBy];
+                        maxVal = maximums[datasetKey].grouped[colorBy][totalBy];
                     }
                     
                     // For linear scale only, set a fixed range based on the maximum
                     // For log scale, let Plotly auto-scale
                     let yAxisConfig = {
                         title: {
-                            text: getYAxisTitle(totalBy, valueMode, isCumulative) + (logScale ? ' (log)' : ''),
+                            text: getYAxisTitle(totalBy, valueMode, isCumulative, isInflationAdjusted) + (logScale ? ' (log)' : ''),
                             font: { size: 11, color: colors.textSecondary }
                         },
                         type: logScale ? 'log' : 'linear',
@@ -1068,6 +1171,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             if (yearIndex > 0) {
                 const prevYear = years[yearIndex - 1];
                 const prevYearData = data.filter(d => d.year === prevYear);
+                
                 const prevTotalIndividuals = prevYearData.reduce((sum, d) => sum + d.individuals_count, 0);
                 const prevTotalIncome = prevYearData.reduce((sum, d) => sum + d.total_income_amount, 0);
                 const prevTotalTax = prevYearData.reduce((sum, d) => sum + d.net_tax_amount, 0);
@@ -1144,6 +1248,12 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         });
         
         document.getElementById('cumulativeToggle').addEventListener('change', function() {
+            const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
+            updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
+            updateURLParams();
+        });
+        
+        document.getElementById('inflationToggle').addEventListener('change', function() {
             const stackMode = document.getElementById('stackToggle').checked ? 'stack' : 'group';
             updateChart(currentFrame, document.getElementById('colorBy').value, stackMode);
             updateURLParams();
@@ -1416,6 +1526,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 percentage: params.get('p') !== '0',  // default true, 0 = false
                 cumulative: params.get('cu') !== '0',  // default true, 0 = false
                 log: params.get('l') === '1',  // default false, 1 = true
+                inflation: params.get('i') === '1',  // default false, 1 = true
                 year: params.get('y') || years[0]
             };
         }
@@ -1459,6 +1570,9 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             if (document.getElementById('logToggle').checked) {
                 params.set('l', '1');
             }
+            if (document.getElementById('inflationToggle').checked) {
+                params.set('i', '1');
+            }
             if (years[currentFrame] !== years[0]) {
                 params.set('y', years[currentFrame]);
             }
@@ -1475,6 +1589,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         document.getElementById('percentageToggle').checked = urlParams.percentage;
         document.getElementById('cumulativeToggle').checked = urlParams.cumulative;
         document.getElementById('logToggle').checked = urlParams.log;
+        document.getElementById('inflationToggle').checked = urlParams.inflation;
         
         // Find the year index
         const yearIndex = years.indexOf(urlParams.year);
