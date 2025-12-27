@@ -640,6 +640,17 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+    position: relative;
+}
+
+.commit-hash {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.7em;
+    color: var(--text-tertiary);
+    opacity: 0.5;
+    margin: 0;
 }
 
 .modal-close {

@@ -12,8 +12,20 @@ Create an animated tax visualisation using Plotly.
 
 import pandas as pd
 import json
+import subprocess
 import plotly.graph_objects as go
 import plotly.express as px
+
+def get_git_commit():
+    """Get the current git commit hash."""
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            capture_output=True, text=True, check=True
+        )
+        return result.stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return 'unknown'
 
 def simplify_income_range(val):
     """Remove the sorting prefix for display."""
@@ -726,9 +738,10 @@ def main():
             
             <h3>Source Code</h3>
             <p><a href="https://github.com/Posnet/aussie.tax" target="_blank" rel="noopener noreferrer">github.com/Posnet/aussie.tax</a></p>
+            <p class="commit-hash">''' + get_git_commit() + '''</p>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>'''
