@@ -67,3 +67,53 @@ Income ranges are ordered from "$6,000 or less" to "$1,000,001 or more" (15 brac
 - Open `public/index.html` directly in a browser to test
 - Changes to data or chart logic require re-running `create_plotly_chart.py`
 - Theme switching (light/dark/system) is handled via CSS variables and body class
+
+## Data Pipeline Internals
+
+### Inflation Redistribution (`create_inflation_redistributed_data.py`)
+
+Redistributes historical income data into 2022-23 equivalent brackets using CPI inflation factors.
+
+**Algorithm**:
+1. For each historical year, multiply income bracket bounds by inflation factor
+2. Use Beta(2, 5) distribution to model right-skewed income distribution within each bracket
+3. Calculate overlap between inflated source brackets and modern target brackets
+4. Allocate individuals/income/tax proportionally based on overlap
+
+**Key assumptions**:
+- Beta(2, 5) parameters assume more people cluster toward lower end of each bracket (right-skewed). Actual within-bracket distribution is unknown.
+- Upper bound for "$1,000,001 or more" bracket set to $2,000,000 for redistribution calculations. High earners above this effective ceiling are treated uniformly.
+- Individual counts are rounded per-bracket; cumulative rounding error is ~0.05% per year (verified acceptable by `verify_redistribution.py`).
+
+**Inflation factors** (loaded from `inflation_factors_fy_correct.csv`):
+| Year | Factor | Year | Factor |
+|------|--------|------|--------|
+| 2010-11 | 1.34 | 2017-18 | 1.17 |
+| 2011-12 | 1.31 | 2018-19 | 1.15 |
+| 2012-13 | 1.28 | 2019-20 | 1.14 |
+| 2013-14 | 1.25 | 2020-21 | 1.12 |
+| 2014-15 | 1.23 | 2021-22 | 1.07 |
+| 2015-16 | 1.21 | 2022-23 | 1.00 |
+| 2016-17 | 1.19 | | |
+
+### Chart Generation (`create_plotly_chart.py`)
+
+**Data processing**:
+1. Reads both nominal and redistributed CSVs
+2. Groups by income bracket + demographics, sums numeric fields
+3. Pre-calculates Y-axis maximums for all mode combinations (stacked/grouped, nominal/redistributed, absolute/percentage)
+4. Embeds data as JSON directly into `script.js`
+
+**Tax brackets**: Hardcoded in JavaScript output (lines 1365-1477), not loaded from `tax_rates/*.json` files. Historical rates verified accurate including:
+- 2012-13: Tax-free threshold raised to $18,200
+- 2014-15 to 2016-17: 2% Budget Repair Levy (47% top rate)
+- 2020-21: Tax cuts (32.5% extended to $120k)
+- 2024-25: Stage 3 cuts (16% from $18,200, 30% from $45k)
+
+**Income range ordering**: Hardcoded list at line 45-61 must match CSV values exactly or chart sorting breaks.
+
+### Known Limitations
+
+1. **Tax brackets manual** — `tax_rates/*.json` files exist but aren't used by chart generator; tax brackets are hardcoded in `create_plotly_chart.py`
+2. **High-income approximation** — "$1,000,001 or more" bracket uses $2M ceiling for redistribution math
+3. **Within-bracket distribution** — Beta(2,5) is a reasonable but unvalidated assumption

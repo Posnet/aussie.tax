@@ -16,22 +16,13 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-# Inflation factors relative to 2022-23
-inflation_factors = {
-    '2010–11': 1.34,
-    '2011–12': 1.31,
-    '2012–13': 1.28,
-    '2013–14': 1.25,
-    '2014–15': 1.23,
-    '2015–16': 1.21,
-    '2016–17': 1.19,
-    '2017–18': 1.17,
-    '2018–19': 1.15,
-    '2019–20': 1.14,
-    '2020–21': 1.12,
-    '2021–22': 1.07,
-    '2022–23': 1.00
-}
+def load_inflation_factors(csv_path='inflation_factors_fy_correct.csv'):
+    """Load inflation factors from CSV file."""
+    df = pd.read_csv(csv_path)
+    return dict(zip(df['financial_year'], df['inflation_factor_to_2022_23']))
+
+# Load inflation factors from CSV (relative to 2022-23)
+inflation_factors = load_inflation_factors()
 
 # Modern income brackets (2023 dollars) - these will be our target brackets
 modern_brackets = [
