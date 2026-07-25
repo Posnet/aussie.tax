@@ -16,19 +16,26 @@ Verify that the redistributed inflation-adjusted data maintains integrity:
 import pandas as pd
 import numpy as np
 
-def load_inflation_factors(csv_path='inflation_factors_fy_correct.csv'):
-    """Load inflation factors from CSV file."""
-    df = pd.read_csv(csv_path)
-    return dict(zip(df['financial_year'], df['inflation_factor_to_2022_23']))
+ORIGINAL_CSV = 'ato_2010-2024.csv'
+REDISTRIBUTED_CSV = 'ato_2010-2024_inflation_redistributed.csv'
 
-# Load inflation factors from CSV (relative to 2022-23)
+def load_inflation_factors(csv_path='inflation_factors_fy_correct.csv'):
+    """Load inflation factors from CSV file.
+
+    The factor column is named for the base year, so read it positionally
+    rather than hard-coding a base that the CSV may have moved past.
+    """
+    df = pd.read_csv(csv_path)
+    return dict(zip(df['financial_year'], df.iloc[:, 1]))
+
+# Load inflation factors from CSV (relative to the base year)
 inflation_factors = load_inflation_factors()
 
 def verify_redistribution():
     # Load both datasets
     print("Loading datasets...")
-    df_original = pd.read_csv('ato_2010-2023.csv')
-    df_redistributed = pd.read_csv('ato_2010-2023_inflation_redistributed.csv')
+    df_original = pd.read_csv(ORIGINAL_CSV)
+    df_redistributed = pd.read_csv(REDISTRIBUTED_CSV)
     
     print("\nVerifying data integrity for each year:")
     print("=" * 100)
@@ -118,12 +125,12 @@ def verify_redistribution():
     
     # Additional analysis - show bracket distribution changes
     print("\n" + "=" * 100)
-    print("BRACKET DISTRIBUTION ANALYSIS (2010-11 vs 2022-23):")
-    
     # Compare bracket distributions for first and last year
-    first_year = '2010–11'
-    last_year = '2022–23'
-    
+    years = sorted(df_original['income_year'].unique())
+    first_year, last_year = years[0], years[-1]
+    print(f"BRACKET DISTRIBUTION ANALYSIS ({first_year} vs {last_year}):")
+
+
     orig_first = df_original[df_original['income_year'] == first_year].groupby('normalized_income_range')['individuals_count'].sum()
     redis_first = df_redistributed[df_redistributed['income_year'] == first_year].groupby('normalized_income_range')['individuals_count'].sum()
     

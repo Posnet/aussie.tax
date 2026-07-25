@@ -8,7 +8,7 @@
 # ]
 # ///
 """
-Create inflation-adjusted dataset by redistributing historical data into 2023-equivalent income brackets.
+Create inflation-adjusted dataset by redistributing historical data into 2023-24-equivalent income brackets.
 This shows how people earning equivalent purchasing power fared across different years.
 """
 
@@ -16,15 +16,23 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-def load_inflation_factors(csv_path='inflation_factors_fy_correct.csv'):
-    """Load inflation factors from CSV file."""
-    df = pd.read_csv(csv_path)
-    return dict(zip(df['financial_year'], df['inflation_factor_to_2022_23']))
+BASE_YEAR = '2023–24'
+INPUT_CSV = 'ato_2010-2024.csv'
+OUTPUT_CSV = 'ato_2010-2024_inflation_redistributed.csv'
 
-# Load inflation factors from CSV (relative to 2022-23)
+def load_inflation_factors(csv_path='inflation_factors_fy_correct.csv'):
+    """Load inflation factors from CSV file.
+
+    The factor column is named for the base year, so read it positionally
+    rather than hard-coding a base that the CSV may have moved past.
+    """
+    df = pd.read_csv(csv_path)
+    return dict(zip(df['financial_year'], df.iloc[:, 1]))
+
+# Load inflation factors from CSV (relative to BASE_YEAR)
 inflation_factors = load_inflation_factors()
 
-# Modern income brackets (2023 dollars) - these will be our target brackets
+# Modern income brackets (2023-24 dollars) - these will be our target brackets
 modern_brackets = [
     (0, 6000, '$6,000 or less'),
     (6001, 10000, '$6,001 to $10,000'),
@@ -111,9 +119,9 @@ def redistribute_year_data(year_df, year, inflation_factor):
         # Get source bracket bounds in nominal dollars
         source_min_nominal, source_max_nominal = get_bracket_bounds(source_bracket_label)
         
-        # Convert to 2023 dollars
-        source_min_2023 = source_min_nominal * inflation_factor
-        source_max_2023 = source_max_nominal * inflation_factor
+        # Convert to base-year dollars
+        source_min_base = source_min_nominal * inflation_factor
+        source_max_base = source_max_nominal * inflation_factor
         
         # Get totals for this demographic group
         total_individuals = group_df['individuals_count'].sum()
@@ -122,7 +130,7 @@ def redistribute_year_data(year_df, year, inflation_factor):
         
         # Redistribute into modern brackets
         for target_min, target_max, target_label in modern_brackets:
-            overlap = calculate_overlap(source_min_2023, source_max_2023, target_min, target_max)
+            overlap = calculate_overlap(source_min_base, source_max_base, target_min, target_max)
             
             if overlap > 0:
                 # Allocate proportional share to this target bracket
@@ -146,7 +154,7 @@ def redistribute_year_data(year_df, year, inflation_factor):
 def main():
     # Load original data
     print("Loading original data...")
-    df = pd.read_csv('ato_2010-2023.csv')
+    df = pd.read_csv(INPUT_CSV)
     
     # Normalize year format to use em-dashes consistently
     df['income_year'] = df['income_year'].str.replace('-', '–')
@@ -164,8 +172,8 @@ def main():
         
         inflation_factor = inflation_factors[year]
         
-        if year == '2022–23':
-            # For 2022-23, no redistribution needed - it's already in 2023 dollars
+        if year == BASE_YEAR:
+            # The base year is already in base-year dollars.
             year_redistributed = year_df.copy()
         else:
             # Redistribute historical data
@@ -200,15 +208,15 @@ def main():
     })
     
     # Save the redistributed dataset
-    final_df.to_csv('ato_2010-2023_inflation_redistributed.csv', index=False)
-    
+    final_df.to_csv(OUTPUT_CSV, index=False)
+
     print("\n" + "="*60)
     print("Redistribution complete!")
-    print(f"Output saved to: ato_2010-2023_inflation_redistributed.csv")
+    print(f"Output saved to: {OUTPUT_CSV}")
     print(f"Total rows: {len(final_df):,}")
-    
+
     # Verify a specific bracket across years
-    print("\nExample: People earning $80,001-$100,000 (in 2023 dollars) across years:")
+    print(f"\nExample: People earning $80,001-$100,000 (in {BASE_YEAR} dollars) across years:")
     example_bracket = final_df[final_df['normalized_income_range'] == '$80,001 to $100,000']
     
     for year in sorted(example_bracket['income_year'].unique()):

@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aussie Tax</title>
-    <meta name="description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta name="description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2024. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="author" content="Posnet">
     <meta name="contact" content="aussie-tax@denialof.services">
     <meta name="theme-color" content="#02335c">
 
     <!-- Open Graph meta tags for better social media sharing -->
     <meta property="og:title" content="Aussie Tax">
-    <meta property="og:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta property="og:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2024. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://aussie.tax">
     <meta property="og:image" content="https://aussie.tax/tax_cut_share.png">
@@ -19,7 +19,7 @@
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Aussie Tax">
-    <meta name="twitter:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
+    <meta name="twitter:description" content="Interactive visualisation of Australian individual taxpayer statistics from 2010-2024. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.">
     <meta name="twitter:image" content="https://aussie.tax/tax_cut_share.png">
 
     <!-- Canonical link to avoid duplicate content issues -->
@@ -41,7 +41,7 @@
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Aussie Tax",
-      "description": "Interactive visualisation of Australian individual taxpayer statistics from 2010-2023. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.",
+      "description": "Interactive visualisation of Australian individual taxpayer statistics from 2010-2024. Explore income distribution, tax contributions, and demographic breakdowns across different income brackets.",
       "author": {
         "@type": "Person",
         "name": "Posnet",
@@ -72,7 +72,7 @@
         <div class="header">
             <button class="theme-toggle" id="themeToggle" data-tooltip="System theme">◐</button>
             <div class="controls-section">
-                <h1>AUSSIE TAX // INDIVIDUAL TAXPAYERS 2010-2023</h1>
+                <h1>AUSSIE TAX // INDIVIDUAL TAXPAYERS 2010-2024</h1>
                 <div class="controls">
                     <div class="selectors-group">
                         <div class="control-group">
@@ -130,10 +130,10 @@
                             </div>
                             
                             <div class="control-group">
-                                <label for="inflationToggle" data-tooltip="Show equivalent earners (infl. 2022-23 $)">
+                                <label for="inflationToggle" data-tooltip="Show equivalent earners (infl. 2023-24 $)">
                                     <input type="checkbox" id="inflationToggle">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">$<sub>23</sub></span>
+                                    <span class="toggle-icon">$<sub>24</sub></span>
                                 </label>
                             </div>
                         </div>
@@ -191,8 +191,8 @@
         </div>
         
         <div class="data-source-bottom">
-            Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2022-23/resource/a7f8226a-af03-431a-80f3-cdca85a9d63e" target="_blank" rel="noopener noreferrer">
-                Australian Taxation Office - Taxation Statistics 2022-23
+            Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2023-24/resource/fa246a26-1317-443d-8f6e-6d7521453861" target="_blank" rel="noopener noreferrer">
+                Australian Taxation Office - Taxation Statistics 2023-24
             </a>
         </div>
     </div>
@@ -207,7 +207,7 @@
             <h2>About This Visualisation</h2>
             
             <h3>Data Source</h3>
-            <p>This visualisation uses data from the Australian Taxation Office (ATO) Taxation Statistics, specifically the Individual Sample Files from 2010-11 to 2022-23. The data represents all Australian individual taxpayers who lodged tax returns.</p>
+            <p>This visualisation uses data from the Australian Taxation Office (ATO) Taxation Statistics, specifically the Individual Sample Files from 2010-11 to 2023-24. The data represents all Australian individual taxpayers who lodged tax returns.</p>
             
             <h3>Key Metrics</h3>
             <ul>
@@ -220,13 +220,13 @@
             <h3>Income Brackets</h3>
             <p>The ATO groups taxpayers into income ranges. The highest bracket "$1,000,001 or more" includes all very high earners, which can skew averages in that bracket.</p>
             
-            <h3>Inflation Adjustment ($<sub>23</sub>)</h3>
-            <p>When enabled, this feature shows "equivalent earners" - people who had the same purchasing power in historical years as someone earning that amount in 2022-23.</p>
+            <h3>Inflation Adjustment ($<sub>24</sub>)</h3>
+            <p>When enabled, this feature shows "equivalent earners" - people who had the same purchasing power in historical years as someone earning that amount in 2023-24.</p>
             <p><strong>How it works:</strong></p>
             <ul>
-                <li>Uses RBA inflation data to convert historical incomes to 2022-23 dollars</li>
+                <li>Uses RBA inflation data to convert historical incomes to 2023-24 dollars</li>
                 <li>Redistributes people into modern income brackets based on their inflation-adjusted income</li>
-                <li>Example: Someone earning $50,000 in 2010-11 had the purchasing power of $67,000 in 2022-23</li>
+                <li>Example: Someone earning $50,000 in 2010-11 had the purchasing power of $70,000 in 2023-24</li>
             </ul>
             <p><strong>Important:</strong> This shows where people <em>would</em> be distributed if their purchasing power was translated to today's dollars, not actual income growth.</p>
             
@@ -256,7 +256,7 @@
             
             <h3>Source Code</h3>
             <p><a href="https://github.com/Posnet/aussie.tax" target="_blank" rel="noopener noreferrer">github.com/Posnet/aussie.tax</a></p>
-            <p class="commit-hash">66b662f</p>
+            <p class="commit-hash">5fb38d5</p>
         </div>
     </div>
 
