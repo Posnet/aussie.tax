@@ -44,6 +44,12 @@ def simplify_age_range(val):
     return str(val)
 
 def main():
+    # Inflation factors, so the tax bracket bar can be redrawn in real dollars
+    factors_df = pd.read_csv('inflation_factors_fy_correct.csv')
+    inflation_factors = dict(zip(factors_df['financial_year'],
+                                 factors_df.iloc[:, 1].astype(float)))
+    base_year = factors_df['financial_year'].iloc[-1]
+
     # Load the normalized data
     df = pd.read_csv('ato_2010-2024.csv')
 
@@ -782,6 +788,10 @@ function initChart() {
         nominal: rawData,
         redistributed: rawDataRedistributed
     };
+
+    // CPI factors converting each financial year into base-year dollars.
+    const inflationFactors = ''' + json.dumps(inflation_factors) + ''';
+    const BASE_YEAR = ''' + json.dumps(base_year) + ''';
 
     // Pre-calculated maximums for each combination
 const maximums = {
@@ -1539,7 +1549,11 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         };
         
         // Function to update tax brackets visualisation
-        const TAX_BRACKET_MAX_INCOME = 200000;  // Cap the visualisation at $200k
+        const TAX_BRACKET_MAX_INCOME = 200000;  // Cap the nominal visualisation at $200k
+        // Deflated, the 2010-11 top threshold reaches $252k, so the real-dollar
+        // axis has to be wider - and fixed across years, or the bands cannot be
+        // compared from one year to the next.
+        const TAX_BRACKET_MAX_REAL = 260000;
         const LABEL_MIN_GAP_PX = 6;             // Smallest readable gap between threshold labels
         const RATE_LABEL_MIN_WIDTH = 6;         // Percent of the bar needed to fit "NN%"
 
@@ -1550,6 +1564,12 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             const channel = c => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
             // 0.18 is where dark text overtakes white against these fills.
             return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b) > 0.18;
+        }
+
+        // Deflated thresholds are not round numbers, so round to the nearest $1k.
+        function formatThreshold(amount) {
+            if (amount === 0) return '$0';
+            return '$' + Math.round(amount / 1000) + 'k';
         }
 
         // Thresholds worth naming; the rest are implied by the segments.
@@ -1563,16 +1583,13 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         function dropCollidingLabels(container) {
             const labels = [...container.children];
             let previous = null;
-            labels.forEach((label, i) => {
+            labels.forEach(label => {
                 const rect = label.getBoundingClientRect();
                 if (previous && rect.left < previous.rect.right + LABEL_MIN_GAP_PX) {
-                    const isLast = i === labels.length - 1;
-                    if (isLast) {
-                        previous.el.remove();
-                    } else {
-                        label.remove();
-                        return;
-                    }
+                    // Keep the earlier one: a real threshold is worth more than
+                    // the axis cap that follows it.
+                    label.remove();
+                    return;
                 }
                 previous = { el: label, rect };
             });
@@ -1581,6 +1598,21 @@ document.getElementById('themeToggle').addEventListener('click', function() {
         function updateTaxBrackets(year) {
             const brackets = taxBrackets[year];
             if (!brackets) return;
+
+            // Thresholds are legislated in nominal dollars and then left to sit
+            // while prices rise. Deflating them into base-year dollars is what
+            // makes bracket creep visible: the bands slide left year on year,
+            // and the top bracket closes in on the ordinary earner.
+            const inRealDollars = document.getElementById('inflationToggle').checked;
+            const factor = inRealDollars ? (inflationFactors[year] || 1) : 1;
+            const axisMax = inRealDollars ? TAX_BRACKET_MAX_REAL : TAX_BRACKET_MAX_INCOME;
+
+            const header = document.querySelector('.tax-brackets-header');
+            if (header) {
+                header.textContent = inRealDollars
+                    ? `TAX BRACKETS (${BASE_YEAR} $)`
+                    : 'TAX BRACKETS';
+            }
 
             const viz = document.getElementById('taxBracketsViz');
             viz.innerHTML = '';
@@ -1593,11 +1625,11 @@ document.getElementById('themeToggle').addEventListener('click', function() {
 
             brackets.forEach((bracket, i) => {
                 const nextBracket = brackets[i + 1];
-                const start = bracket.threshold;
+                const start = bracket.threshold * factor;
                 const end = nextBracket
-                    ? Math.min(nextBracket.threshold, TAX_BRACKET_MAX_INCOME)
-                    : TAX_BRACKET_MAX_INCOME;
-                const width = ((end - start) / TAX_BRACKET_MAX_INCOME) * 100;
+                    ? Math.min(nextBracket.threshold * factor, axisMax)
+                    : axisMax;
+                const width = ((end - start) / axisMax) * 100;
                 if (width <= 0) return;
 
                 const segment = document.createElement('div');
@@ -1614,25 +1646,23 @@ document.getElementById('themeToggle').addEventListener('click', function() {
 
                 const label = document.createElement('div');
                 label.className = 'tax-bracket-label';
-                const position = (start / TAX_BRACKET_MAX_INCOME) * 100;
+                const position = (start / axisMax) * 100;
                 if (position > 85) {
                     label.style.right = (100 - position) + '%';
                     label.style.transform = 'none';
                 } else {
                     label.style.left = position + '%';
                 }
-                label.textContent = bracket.threshold === 0
-                    ? '$0'
-                    : '$' + (bracket.threshold / 1000) + 'k';
+                label.textContent = formatThreshold(start);
                 labelsContainer.appendChild(label);
             });
 
             const lastBracket = brackets[brackets.length - 1];
-            if (lastBracket && lastBracket.threshold < TAX_BRACKET_MAX_INCOME) {
+            if (lastBracket && lastBracket.threshold * factor < axisMax) {
                 const label = document.createElement('div');
                 label.className = 'tax-bracket-label';
                 label.style.left = '100%';
-                label.textContent = '$200k+';
+                label.textContent = formatThreshold(axisMax) + '+';
                 labelsContainer.appendChild(label);
             }
 
