@@ -8,6 +8,7 @@
     <meta name="author" content="Posnet">
     <meta name="contact" content="aussie-tax@denialof.services">
     <meta name="theme-color" content="#02335c">
+    <meta name="color-scheme" content="light dark">
 
     <!-- Open Graph meta tags for better social media sharing -->
     <meta property="og:title" content="Aussie Tax">
@@ -68,9 +69,13 @@
     <script src="plotly-3.0.1.min.js" charset="utf-8" defer></script>
 </head>
 <body>
+    <a class="skip-link" href="#chart">Skip to chart</a>
     <div class="container">
-        <div class="header">
-            <button class="theme-toggle" id="themeToggle" data-tooltip="System theme">◐</button>
+        <header class="header">
+            <button class="theme-toggle" id="themeToggle" data-tooltip="System theme"
+                    aria-label="Colour theme: system. Activate to switch to light.">
+                <span aria-hidden="true">◐</span>
+            </button>
             <div class="controls-section">
                 <h1>AUSSIE TAX // INDIVIDUAL TAXPAYERS 2010-2024</h1>
                 <div class="controls">
@@ -96,59 +101,68 @@
                     </div>
                     
                     <div class="toggles-group">
-                        <div class="toggles-row">
+                        <div class="toggles-row" role="group" aria-label="Chart display options">
                             <div class="control-group">
                                 <label for="stackToggle" data-tooltip="Stack/Group bars">
-                                    <input type="checkbox" id="stackToggle" checked>
+                                    <input type="checkbox" id="stackToggle" checked
+                                           aria-label="Stack bars instead of grouping them side by side">
                                     <div class="toggle-switch"></div>
-                                    <span id="stackIcon" class="toggle-icon">≡</span>
+                                    <span id="stackIcon" class="toggle-icon" aria-hidden="true">≡</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="percentageToggle" data-tooltip="Show as percentage">
-                                    <input type="checkbox" id="percentageToggle" checked>
+                                    <input type="checkbox" id="percentageToggle" checked
+                                           aria-label="Show values as a percentage of the year total">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">％</span>
+                                    <span class="toggle-icon" aria-hidden="true">％</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="cumulativeToggle" data-tooltip="Cumulative view">
-                                    <input type="checkbox" id="cumulativeToggle" checked>
+                                    <input type="checkbox" id="cumulativeToggle" checked
+                                           aria-label="Cumulative: each bar includes all lower income brackets">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">∑</span>
+                                    <span class="toggle-icon" aria-hidden="true">∑</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="logToggle" data-tooltip="Logarithmic scale">
-                                    <input type="checkbox" id="logToggle">
+                                    <input type="checkbox" id="logToggle"
+                                           aria-label="Use a logarithmic scale on the value axis">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">L<sub>10</sub></span>
+                                    <span class="toggle-icon" aria-hidden="true">L<sub>10</sub></span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="inflationToggle" data-tooltip="Show equivalent earners (infl. 2023-24 $)">
-                                    <input type="checkbox" id="inflationToggle">
+                                    <input type="checkbox" id="inflationToggle"
+                                           aria-label="Adjust historical incomes for inflation into 2023-24 dollars">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">$<sub>24</sub></span>
+                                    <span class="toggle-icon" aria-hidden="true">$<sub>24</sub></span>
                                 </label>
                             </div>
                         </div>
                         
                         <div class="control-group play-button-group">
-                            <button id="prevYear" class="nav-button mobile-only">◀◀</button>
+                            <button id="prevYear" class="nav-button mobile-only" aria-label="Previous year">
+                                <span aria-hidden="true">◀◀</span>
+                            </button>
                             <button id="playButton">▶ Play Animation</button>
-                            <button id="nextYear" class="nav-button mobile-only">▶▶</button>
+                            <button id="nextYear" class="nav-button mobile-only" aria-label="Next year">
+                                <span aria-hidden="true">▶▶</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="stats-wrapper">
-                <div class="stats" id="stats">
+                <div class="stats" id="stats" role="status" aria-live="polite" aria-atomic="true">
                     <div class="stats-row">
                         <div class="stat">
                             <span class="stat-label">Total Taxpayers:</span>
@@ -179,32 +193,37 @@
             </div>
             
             <div class="tax-brackets" id="taxBrackets">
-                <div class="tax-brackets-header">TAX BRACKETS</div>
+                <h2 class="tax-brackets-header">TAX BRACKETS</h2>
                 <div class="tax-brackets-viz" id="taxBracketsViz"></div>
             </div>
-        </div>
-        <button class="help-button mobile-only" id="helpButtonMobile">?</button>
-        
-        <div id="chart-container">
-            <div id="chart"></div>
-            <div class="help-text">← → arrow keys to navigate years</div>
-        </div>
-        
-        <div class="data-source-bottom">
+        </header>
+        <button class="help-button mobile-only" id="helpButtonMobile"
+                aria-label="About this visualisation"><span aria-hidden="true">?</span></button>
+
+        <main id="chart-container">
+            <div id="chart" role="img" aria-label="Loading chart"></div>
+            <p class="help-text">← → arrow keys to navigate years</p>
+        </main>
+
+        <footer class="data-source-bottom">
             Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2023-24/resource/fa246a26-1317-443d-8f6e-6d7521453861" target="_blank" rel="noopener noreferrer">
                 Australian Taxation Office - Taxation Statistics 2023-24
             </a>
-        </div>
+        </footer>
     </div>
-    
+
     <!-- Help Button -->
-    <button class="help-button" id="helpButton">?</button>
-    
+    <button class="help-button" id="helpButton"
+            aria-label="About this visualisation"><span aria-hidden="true">?</span></button>
+
     <!-- Help Modal -->
-    <div id="helpModal" class="modal">
+    <div id="helpModal" class="modal" role="dialog" aria-modal="true"
+         aria-labelledby="helpModalTitle" hidden>
         <div class="modal-content">
-            <span class="modal-close" id="modalClose">&times;</span>
-            <h2>About This Visualisation</h2>
+            <button class="modal-close" id="modalClose" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h2 id="helpModalTitle">About This Visualisation</h2>
             
             <h3>Data Source</h3>
             <p>This visualisation uses data from the Australian Taxation Office (ATO) Taxation Statistics, specifically the Individual Sample Files from 2010-11 to 2023-24. The data represents all Australian individual taxpayers who lodged tax returns.</p>
@@ -256,7 +275,7 @@
             
             <h3>Source Code</h3>
             <p><a href="https://github.com/Posnet/aussie.tax" target="_blank" rel="noopener noreferrer">github.com/Posnet/aussie.tax</a></p>
-            <p class="commit-hash">38ab7c2</p>
+            <p class="commit-hash">4376689</p>
         </div>
     </div>
 

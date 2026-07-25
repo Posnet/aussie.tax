@@ -490,6 +490,7 @@ def main():
     <meta name="author" content="Posnet">
     <meta name="contact" content="aussie-tax@denialof.services">
     <meta name="theme-color" content="#02335c">
+    <meta name="color-scheme" content="light dark">
 
     <!-- Open Graph meta tags for better social media sharing -->
     <meta property="og:title" content="Aussie Tax">
@@ -550,9 +551,13 @@ def main():
     <script src="plotly-3.0.1.min.js" charset="utf-8" defer></script>
 </head>
 <body>
+    <a class="skip-link" href="#chart">Skip to chart</a>
     <div class="container">
-        <div class="header">
-            <button class="theme-toggle" id="themeToggle" data-tooltip="System theme">◐</button>
+        <header class="header">
+            <button class="theme-toggle" id="themeToggle" data-tooltip="System theme"
+                    aria-label="Colour theme: system. Activate to switch to light.">
+                <span aria-hidden="true">◐</span>
+            </button>
             <div class="controls-section">
                 <h1>AUSSIE TAX // INDIVIDUAL TAXPAYERS 2010-2024</h1>
                 <div class="controls">
@@ -578,59 +583,68 @@ def main():
                     </div>
                     
                     <div class="toggles-group">
-                        <div class="toggles-row">
+                        <div class="toggles-row" role="group" aria-label="Chart display options">
                             <div class="control-group">
                                 <label for="stackToggle" data-tooltip="Stack/Group bars">
-                                    <input type="checkbox" id="stackToggle" checked>
+                                    <input type="checkbox" id="stackToggle" checked
+                                           aria-label="Stack bars instead of grouping them side by side">
                                     <div class="toggle-switch"></div>
-                                    <span id="stackIcon" class="toggle-icon">≡</span>
+                                    <span id="stackIcon" class="toggle-icon" aria-hidden="true">≡</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="percentageToggle" data-tooltip="Show as percentage">
-                                    <input type="checkbox" id="percentageToggle" checked>
+                                    <input type="checkbox" id="percentageToggle" checked
+                                           aria-label="Show values as a percentage of the year total">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">％</span>
+                                    <span class="toggle-icon" aria-hidden="true">％</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="cumulativeToggle" data-tooltip="Cumulative view">
-                                    <input type="checkbox" id="cumulativeToggle" checked>
+                                    <input type="checkbox" id="cumulativeToggle" checked
+                                           aria-label="Cumulative: each bar includes all lower income brackets">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">∑</span>
+                                    <span class="toggle-icon" aria-hidden="true">∑</span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="logToggle" data-tooltip="Logarithmic scale">
-                                    <input type="checkbox" id="logToggle">
+                                    <input type="checkbox" id="logToggle"
+                                           aria-label="Use a logarithmic scale on the value axis">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">L<sub>10</sub></span>
+                                    <span class="toggle-icon" aria-hidden="true">L<sub>10</sub></span>
                                 </label>
                             </div>
                             
                             <div class="control-group">
                                 <label for="inflationToggle" data-tooltip="Show equivalent earners (infl. 2023-24 $)">
-                                    <input type="checkbox" id="inflationToggle">
+                                    <input type="checkbox" id="inflationToggle"
+                                           aria-label="Adjust historical incomes for inflation into 2023-24 dollars">
                                     <div class="toggle-switch"></div>
-                                    <span class="toggle-icon">$<sub>24</sub></span>
+                                    <span class="toggle-icon" aria-hidden="true">$<sub>24</sub></span>
                                 </label>
                             </div>
                         </div>
                         
                         <div class="control-group play-button-group">
-                            <button id="prevYear" class="nav-button mobile-only">◀◀</button>
+                            <button id="prevYear" class="nav-button mobile-only" aria-label="Previous year">
+                                <span aria-hidden="true">◀◀</span>
+                            </button>
                             <button id="playButton">▶ Play Animation</button>
-                            <button id="nextYear" class="nav-button mobile-only">▶▶</button>
+                            <button id="nextYear" class="nav-button mobile-only" aria-label="Next year">
+                                <span aria-hidden="true">▶▶</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="stats-wrapper">
-                <div class="stats" id="stats">
+                <div class="stats" id="stats" role="status" aria-live="polite" aria-atomic="true">
                     <div class="stats-row">
                         <div class="stat">
                             <span class="stat-label">Total Taxpayers:</span>
@@ -661,32 +675,37 @@ def main():
             </div>
             
             <div class="tax-brackets" id="taxBrackets">
-                <div class="tax-brackets-header">TAX BRACKETS</div>
+                <h2 class="tax-brackets-header">TAX BRACKETS</h2>
                 <div class="tax-brackets-viz" id="taxBracketsViz"></div>
             </div>
-        </div>
-        <button class="help-button mobile-only" id="helpButtonMobile">?</button>
-        
-        <div id="chart-container">
-            <div id="chart"></div>
-            <div class="help-text">← → arrow keys to navigate years</div>
-        </div>
-        
-        <div class="data-source-bottom">
+        </header>
+        <button class="help-button mobile-only" id="helpButtonMobile"
+                aria-label="About this visualisation"><span aria-hidden="true">?</span></button>
+
+        <main id="chart-container">
+            <div id="chart" role="img" aria-label="Loading chart"></div>
+            <p class="help-text">← → arrow keys to navigate years</p>
+        </main>
+
+        <footer class="data-source-bottom">
             Data source: <a href="https://data.gov.au/data/dataset/taxation-statistics-2023-24/resource/fa246a26-1317-443d-8f6e-6d7521453861" target="_blank" rel="noopener noreferrer">
                 Australian Taxation Office - Taxation Statistics 2023-24
             </a>
-        </div>
+        </footer>
     </div>
-    
+
     <!-- Help Button -->
-    <button class="help-button" id="helpButton">?</button>
-    
+    <button class="help-button" id="helpButton"
+            aria-label="About this visualisation"><span aria-hidden="true">?</span></button>
+
     <!-- Help Modal -->
-    <div id="helpModal" class="modal">
+    <div id="helpModal" class="modal" role="dialog" aria-modal="true"
+         aria-labelledby="helpModalTitle" hidden>
         <div class="modal-content">
-            <span class="modal-close" id="modalClose">&times;</span>
-            <h2>About This Visualisation</h2>
+            <button class="modal-close" id="modalClose" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h2 id="helpModalTitle">About This Visualisation</h2>
             
             <h3>Data Source</h3>
             <p>This visualisation uses data from the Australian Taxation Office (ATO) Taxation Statistics, specifically the Individual Sample Files from 2010-11 to 2023-24. The data represents all Australian individual taxpayers who lodged tax returns.</p>
@@ -868,18 +887,24 @@ function updateTheme(theme) {
 }
 
 // Theme toggle button
+const THEME_CYCLE = [
+    { theme: 'auto', name: 'system', icon: '◐' },
+    { theme: 'light', name: 'light', icon: '☀' },
+    { theme: 'dark', name: 'dark', icon: '☾' }
+];
+
 document.getElementById('themeToggle').addEventListener('click', function() {
-            const themes = ['auto', 'light', 'dark'];
-            const themeNames = ['System theme', 'Light theme', 'Dark theme'];
-            const currentIndex = document.body.classList.contains('light-theme') ? 1 : 
-                               document.body.classList.contains('dark-theme') ? 2 : 0;
-            const nextIndex = (currentIndex + 1) % 3;
-            const nextTheme = themes[nextIndex];
-            
-            this.textContent = nextTheme === 'auto' ? '◐' : nextTheme === 'light' ? '☀' : '☾';
-            this.setAttribute('data-tooltip', themeNames[nextIndex]);
-            updateTheme(nextTheme);
-        });
+    const currentIndex = document.body.classList.contains('light-theme') ? 1 :
+                         document.body.classList.contains('dark-theme') ? 2 : 0;
+    const next = THEME_CYCLE[(currentIndex + 1) % THEME_CYCLE.length];
+    const following = THEME_CYCLE[(currentIndex + 2) % THEME_CYCLE.length];
+
+    this.querySelector('span').textContent = next.icon;
+    this.setAttribute('data-tooltip', next.name.charAt(0).toUpperCase() + next.name.slice(1) + ' theme');
+    this.setAttribute('aria-label',
+        `Colour theme: ${next.name}. Activate to switch to ${following.name}.`);
+    updateTheme(next.theme);
+});
         
         // Helper functions for Y-axis formatting
         function getYAxisTitle(totalBy, valueMode, isCumulative, isInflationAdjusted) {
@@ -1231,6 +1256,29 @@ document.getElementById('themeToggle').addEventListener('click', function() {
             // Update stats and tax brackets
             updateStats(yearData, yearIndex);
             updateTaxBrackets(year);
+            describeChart(year, colorBy, stackMode);
+        }
+
+        // Plotly renders bare SVG, so the container carries the text alternative.
+        function describeChart(year, colorBy, stackMode) {
+            const measure = document.getElementById('totalBy');
+            const measureLabel = measure.options[measure.selectedIndex].text;
+            const grouping = {
+                none: 'not broken down',
+                age_range_display: 'broken down by age group',
+                sex: 'broken down by gender',
+                taxable_status: 'broken down by taxable status'
+            }[colorBy] || 'not broken down';
+
+            const parts = [`${measureLabel} by income bracket for ${year}`, grouping,
+                           stackMode === 'stack' ? 'stacked' : 'grouped side by side'];
+            if (document.getElementById('percentageToggle').checked) parts.push('as a percentage of the year total');
+            if (document.getElementById('cumulativeToggle').checked) parts.push('cumulative');
+            if (document.getElementById('logToggle').checked) parts.push('on a logarithmic scale');
+            if (document.getElementById('inflationToggle').checked) parts.push('in 2023-24 dollars');
+
+            document.getElementById('chart').setAttribute(
+                'aria-label', parts.join(', ') + '. Figures are summarised in the statistics above.');
         }
         
         let previousYearStats = null;
@@ -1380,183 +1428,217 @@ document.getElementById('themeToggle').addEventListener('click', function() {
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 6000, rate: 15, color: '#c4b5fd' },
                 { threshold: 37000, rate: 30, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2011–12': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 6000, rate: 15, color: '#c4b5fd' },
                 { threshold: 37000, rate: 30, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2012–13': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2013–14': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2014–15': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
                 { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
             ],
             '2015–16': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 80000, rate: 37, color: '#8b5cf6' },
+                { threshold: 80000, rate: 37, color: '#7c3aed' },
                 { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
             ],
             '2016–17': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 87000, rate: 37, color: '#8b5cf6' },
+                { threshold: 87000, rate: 37, color: '#7c3aed' },
                 { threshold: 180000, rate: 47, color: '#6b21a8' }  // Includes 2% budget repair levy
             ],
             '2017–18': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 87000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 87000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2018–19': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 90000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 90000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2019–20': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 37000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 90000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 90000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2020–21': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 45000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 120000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 120000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2021–22': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 45000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 120000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 120000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2022–23': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 45000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 120000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 120000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2023–24': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 19, color: '#c4b5fd' },
                 { threshold: 45000, rate: 32.5, color: '#a78bfa' },
-                { threshold: 120000, rate: 37, color: '#8b5cf6' },
-                { threshold: 180000, rate: 45, color: '#7c3aed' }
+                { threshold: 120000, rate: 37, color: '#7c3aed' },
+                { threshold: 180000, rate: 45, color: '#5b21b6' }
             ],
             '2024–25': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 16, color: '#c4b5fd' },
                 { threshold: 45000, rate: 30, color: '#a78bfa' },
-                { threshold: 135000, rate: 37, color: '#8b5cf6' },
-                { threshold: 190000, rate: 45, color: '#7c3aed' }
+                { threshold: 135000, rate: 37, color: '#7c3aed' },
+                { threshold: 190000, rate: 45, color: '#5b21b6' }
             ],
             '2025–26': [
                 { threshold: 0, rate: 0, color: '#f4f0fe' },
                 { threshold: 18200, rate: 16, color: '#c4b5fd' },
                 { threshold: 45000, rate: 30, color: '#a78bfa' },
-                { threshold: 135000, rate: 37, color: '#8b5cf6' },
-                { threshold: 190000, rate: 45, color: '#7c3aed' }
+                { threshold: 135000, rate: 37, color: '#7c3aed' },
+                { threshold: 190000, rate: 45, color: '#5b21b6' }
             ]
         };
         
         // Function to update tax brackets visualisation
+        const TAX_BRACKET_MAX_INCOME = 200000;  // Cap the visualisation at $200k
+        const LABEL_MIN_GAP_PX = 6;             // Smallest readable gap between threshold labels
+        const RATE_LABEL_MIN_WIDTH = 6;         // Percent of the bar needed to fit "NN%"
+
+        // The two lowest brackets are pale enough that the default light text
+        // vanishes against them, so pick the text colour from the fill.
+        function isLightFill(hex) {
+            const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+            const channel = c => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+            // 0.18 is where dark text overtakes white against these fills.
+            return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b) > 0.18;
+        }
+
+        // Thresholds worth naming; the rest are implied by the segments.
+        const LABELLED_THRESHOLDS = new Set([
+            18200, 37000, 45000, 80000, 87000, 90000, 120000, 135000, 180000, 190000
+        ]);
+
+        // Once laid out, drop any label that would sit on top of its neighbour.
+        // The cap label ("$200k+") is the one worth keeping in a collision, since
+        // it anchors the right-hand end of the scale.
+        function dropCollidingLabels(container) {
+            const labels = [...container.children];
+            let previous = null;
+            labels.forEach((label, i) => {
+                const rect = label.getBoundingClientRect();
+                if (previous && rect.left < previous.rect.right + LABEL_MIN_GAP_PX) {
+                    const isLast = i === labels.length - 1;
+                    if (isLast) {
+                        previous.el.remove();
+                    } else {
+                        label.remove();
+                        return;
+                    }
+                }
+                previous = { el: label, rect };
+            });
+        }
+
         function updateTaxBrackets(year) {
             const brackets = taxBrackets[year];
             if (!brackets) return;
-            
+
             const viz = document.getElementById('taxBracketsViz');
             viz.innerHTML = '';
-            
-            // Create bar container
+
             const barContainer = document.createElement('div');
             barContainer.className = 'tax-bracket-bar';
-            
-            // Create labels container
+
             const labelsContainer = document.createElement('div');
             labelsContainer.className = 'tax-bracket-labels';
-            
-            const maxIncome = 200000; // Cap visualisation at $200k
-            
+
             brackets.forEach((bracket, i) => {
                 const nextBracket = brackets[i + 1];
                 const start = bracket.threshold;
-                const end = nextBracket ? Math.min(nextBracket.threshold, maxIncome) : maxIncome;
-                const width = ((end - start) / maxIncome) * 100;
-                
-                if (width > 0) {
-                    // Create bracket segment
-                    const div = document.createElement('div');
-                    div.className = 'tax-bracket';
-                    div.style.width = width + '%';
-                    div.style.backgroundColor = bracket.color;
-                    div.textContent = bracket.rate + '%';
-                    barContainer.appendChild(div);
-                    
-                    // Create threshold label - only for major thresholds to avoid overlap
-                    if (i === 0 || bracket.threshold === 18200 || bracket.threshold === 37000 || 
-                        bracket.threshold === 45000 || bracket.threshold === 80000 || 
-                        bracket.threshold === 87000 || bracket.threshold === 90000 || 
-                        bracket.threshold === 120000 || bracket.threshold === 135000 ||
-                        bracket.threshold === 180000 || bracket.threshold === 190000) {
-                        const label = document.createElement('div');
-                        label.className = 'tax-bracket-label';
-                        const position = (start / maxIncome) * 100;
-                        // Adjust position for labels near the end to prevent overlap
-                        if (position > 85) {
-                            label.style.right = (100 - position) + '%';
-                            label.style.transform = 'none';
-                        } else {
-                            label.style.left = position + '%';
-                        }
-                        label.textContent = bracket.threshold === 0 ? '$0' : '$' + (bracket.threshold / 1000) + 'k';
-                        labelsContainer.appendChild(label);
-                    }
+                const end = nextBracket
+                    ? Math.min(nextBracket.threshold, TAX_BRACKET_MAX_INCOME)
+                    : TAX_BRACKET_MAX_INCOME;
+                const width = ((end - start) / TAX_BRACKET_MAX_INCOME) * 100;
+                if (width <= 0) return;
+
+                const segment = document.createElement('div');
+                segment.className = 'tax-bracket';
+                segment.classList.toggle('on-light-fill', isLightFill(bracket.color));
+                segment.style.width = width + '%';
+                segment.style.backgroundColor = bracket.color;
+                // A narrow band clips its own label; the tooltip still carries it.
+                segment.textContent = width >= RATE_LABEL_MIN_WIDTH ? bracket.rate + '%' : '';
+                segment.title = bracket.rate + '% bracket';
+                barContainer.appendChild(segment);
+
+                if (i !== 0 && !LABELLED_THRESHOLDS.has(bracket.threshold)) return;
+
+                const label = document.createElement('div');
+                label.className = 'tax-bracket-label';
+                const position = (start / TAX_BRACKET_MAX_INCOME) * 100;
+                if (position > 85) {
+                    label.style.right = (100 - position) + '%';
+                    label.style.transform = 'none';
+                } else {
+                    label.style.left = position + '%';
                 }
+                label.textContent = bracket.threshold === 0
+                    ? '$0'
+                    : '$' + (bracket.threshold / 1000) + 'k';
+                labelsContainer.appendChild(label);
             });
-            
-            // Add final threshold if needed
+
             const lastBracket = brackets[brackets.length - 1];
-            if (lastBracket && lastBracket.threshold < maxIncome) {
+            if (lastBracket && lastBracket.threshold < TAX_BRACKET_MAX_INCOME) {
                 const label = document.createElement('div');
                 label.className = 'tax-bracket-label';
                 label.style.left = '100%';
                 label.textContent = '$200k+';
                 labelsContainer.appendChild(label);
             }
-            
+
             viz.appendChild(barContainer);
             viz.appendChild(labelsContainer);
+            requestAnimationFrame(() => dropCollidingLabels(labelsContainer));
         }
         
         // Define color schemes
@@ -1779,49 +1861,62 @@ if (window.innerWidth <= 768) {
 
 // Modal functionality
 const modal = document.getElementById('helpModal');
-const helpBtn = document.getElementById('helpButton');
-const helpBtnMobile = document.getElementById('helpButtonMobile');
 const closeBtn = document.getElementById('modalClose');
+const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-helpBtn.onclick = function() {
-    modal.style.display = 'block';
+let lastFocused = null;
+
+function modalIsOpen() {
+    return !modal.hidden;
+}
+
+function openModal() {
+    if (modalIsOpen()) return;
+    lastFocused = document.activeElement;
+    modal.hidden = false;
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    closeBtn.focus();
 }
 
-// Also handle mobile help button
-if (helpBtnMobile) {
-    helpBtnMobile.onclick = function() {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    }
-}
-
-closeBtn.onclick = function() {
-    modal.style.display = 'none';
+function closeModal() {
+    if (!modalIsOpen()) return;
+    modal.hidden = true;
     document.body.style.overflow = ''; // Restore scrolling
+    // Send focus back where it came from, rather than to the top of the page.
+    if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+    lastFocused = null;
 }
 
-// Close modal when clicking outside of it
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-    }
+for (const id of ['helpButton', 'helpButtonMobile']) {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', openModal);
 }
 
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' && modal.style.display === 'block') {
-        modal.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-    }
+closeBtn.addEventListener('click', closeModal);
+
+// Clicking the backdrop, but not the dialog itself, dismisses it.
+modal.addEventListener('click', function(event) {
+    if (event.target === modal) closeModal();
 });
 
-// Open modal with shift + ? (which is just ?)
 document.addEventListener('keydown', function(event) {
-    if (event.key === '?' && modal.style.display !== 'block') {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    if (event.key === 'Escape' && modalIsOpen()) {
+        closeModal();
+    } else if (event.key === '?' && !modalIsOpen()) {
+        openModal();
+    } else if (event.key === 'Tab' && modalIsOpen()) {
+        // Keep tabbing inside the dialog while it is open.
+        const items = [...modal.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 });
 

@@ -5,7 +5,7 @@
     --bg-tertiary: #f0f0f0;
     --text-primary: #333333;
     --text-secondary: #666666;
-    --text-tertiary: #999999;
+    --text-tertiary: #6a6a6a;
     --accent: #8b5cf6;
     --accent-hover: #7c3aed;
     --border: #e0e0e0;
@@ -20,7 +20,7 @@
         --bg-tertiary: #2a2a2a;
         --text-primary: #e0e0e0;
         --text-secondary: #a0a0a0;
-        --text-tertiary: #707070;
+        --text-tertiary: #9e9e9e;
         --accent: #a78bfa;
         --accent-hover: #c4b5fd;
         --border: #3a3a3a;
@@ -35,7 +35,7 @@ body.light-theme {
     --bg-tertiary: #f0f0f0;
     --text-primary: #333333;
     --text-secondary: #666666;
-    --text-tertiary: #999999;
+    --text-tertiary: #6a6a6a;
     --accent: #8b5cf6;
     --accent-hover: #7c3aed;
     --border: #e0e0e0;
@@ -49,12 +49,44 @@ body.dark-theme {
     --bg-tertiary: #2a2a2a;
     --text-primary: #e0e0e0;
     --text-secondary: #a0a0a0;
-    --text-tertiary: #707070;
+    --text-tertiary: #9e9e9e;
     --accent: #a78bfa;
     --accent-hover: #c4b5fd;
     --border: #3a3a3a;
     --grid: #2a2a2a;
     --error: #ff6666;
+}
+
+/* ===== Accessibility helpers ===== */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 1001;
+    padding: 8px 12px;
+    background: var(--accent);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    left: 8px;
+    top: 8px;
+}
+
+/* Kept in the accessibility tree but out of the layout, for headings that are
+   visually redundant at a given size. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* ===== Base Styles ===== */
@@ -258,7 +290,6 @@ h1 {
 
 .tax-reform-note.empty {
     border-left-color: var(--text-tertiary);
-    opacity: 0.5;
 }
 
 .note-label {
@@ -292,6 +323,8 @@ h1 {
 }
 
 .tax-brackets-header {
+    margin: 0 0 4px 0;
+    font-weight: normal;
     font-size: 10px;
     color: var(--text-tertiary);
     text-transform: uppercase;
@@ -322,7 +355,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--bg-secondary);
+    color: #ffffff;
     font-size: 10px;
     font-weight: bold;
     transition: all 0.3s;
@@ -331,6 +364,12 @@ h1 {
 
 .tax-bracket:last-child {
     border-right: none;
+}
+
+/* Segment fills run from very pale to deep purple; flip the label on the
+   pale ones so it stays legible. */
+.tax-bracket.on-light-fill {
+    color: #1f1f1f;
 }
 
 .tax-bracket-labels {
@@ -386,9 +425,12 @@ select, button {
     border-radius: 0;
 }
 
-select:focus, button:focus {
-    outline: 1px solid var(--accent);
-    outline-offset: -1px;
+select:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible + .toggle-switch {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 button {
@@ -516,11 +558,6 @@ input[type="checkbox"]:checked + .toggle-switch:hover {
     border-color: var(--accent-hover);
 }
 
-input[type="checkbox"]:focus-visible + .toggle-switch {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
 /* Toggle tooltips */
 .control-group label[data-tooltip] {
     position: relative;
@@ -555,9 +592,15 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     position: absolute;
     top: -1px;
     right: -1px;
-    font-size: 11px;
+    font-size: 13px;
+    line-height: 1;
     text-transform: uppercase;
-    padding: 3px 6px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
     background: var(--accent);
     border: 1px solid var(--accent);
     color: var(--bg-secondary);
@@ -598,9 +641,15 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     position: fixed;
     bottom: 8px;
     right: 8px;
-    font-size: 11px;
+    font-size: 13px;
+    line-height: 1;
     text-transform: uppercase;
-    padding: 3px 6px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
     background: var(--accent);
     border: 1px solid var(--accent);
     color: var(--bg-secondary);
@@ -617,7 +666,7 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
 
 /* ===== Modal ===== */
 .modal {
-    display: none;
+    display: block;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -626,6 +675,12 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
+}
+
+/* Visibility is driven by the [hidden] attribute so the dialog stays out of
+   the accessibility tree when closed. */
+.modal[hidden] {
+    display: none;
 }
 
 .modal-content {
@@ -644,13 +699,10 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
 }
 
 .commit-hash {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
+    text-align: right;
     font-size: 0.7em;
     color: var(--text-tertiary);
-    opacity: 0.5;
-    margin: 0;
+    margin: 24px 0 0 0;
 }
 
 .modal-close {
@@ -659,8 +711,13 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    line-height: 20px;
+    line-height: 1;
     margin: -10px -10px 0 0;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
 }
 
 .modal-close:hover,
@@ -760,6 +817,8 @@ input[type="checkbox"]:focus-visible + .toggle-switch {
 .data-source a, .data-source-bottom a {
     color: var(--accent);
     text-decoration: none;
+    display: inline-block;
+    padding: 8px 0;
 }
 
 .data-source a:hover, .data-source-bottom a:hover {
@@ -790,6 +849,14 @@ body.dark-theme button:hover {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 /* ===== Mobile Styles ===== */
 .mobile-only {
     display: none;
@@ -798,6 +865,8 @@ body.dark-theme button:hover {
 @media (max-width: 768px) {
     .container {
         padding: 4px;
+        /* Clearance for the help button, which floats over the bottom-right. */
+        padding-bottom: 56px;
         display: flex;
         flex-direction: column;
         position: relative;
@@ -811,8 +880,26 @@ body.dark-theme button:hover {
         flex: 0 0 auto;
     }
     
+    /* The heading is redundant next to the controls at this size, but it is
+       the page's only h1, so hide it visually rather than removing it. */
     .header h1 {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* Stacked header: the toggle takes its own row rather than overlapping
+       the full-width selects. */
+    .theme-toggle {
+        position: static;
+        justify-self: end;
+        margin-bottom: -4px;
     }
     
     #chart-container {
@@ -869,11 +956,18 @@ body.dark-theme button:hover {
     }
     
     .help-button.mobile-only {
-        display: block;
+        display: inline-flex;
         position: absolute;
         bottom: 8px;
         right: 8px;
         z-index: 100;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .theme-toggle {
+        min-width: 44px;
+        min-height: 44px;
     }
     
     .header {
